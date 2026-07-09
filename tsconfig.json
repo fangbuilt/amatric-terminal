@@ -8,5 +8,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["cli", "master", "mechanics", "player", "simulation"]
+  "include": ["src"]
 }
