@@ -2,13 +2,15 @@ import chalk from 'chalk'
 import { getState } from '../player/store'
 import { CONSTANTS } from '../master/data'
 
+const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
 export function displayHeader() {
   const state = getState()
   console.clear()
   console.log(chalk.bgHex('#D97706').black.bold(` ☕ AMATRIC: JAKARTA CAMPUS COFFEE `))
   console.log(
     chalk.bold(
-      `Day: ${state.currentDay} | Balance: ${chalk.hex('#10B981')(state.rubyBalance.toFixed(2))} Ruby`,
+      `Day: ${state.currentDay} | Balance: ${chalk.hex('#10B981')(fmt(state.rubyBalance))} Ruby`,
     ),
   )
   const staff: string[] = []

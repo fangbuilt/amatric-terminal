@@ -13,6 +13,9 @@ import { mainMenu } from './index'
 // Helpers
 // ---------------------------------------------------------------------------
 
+const fmt = (n: number) =>
+  n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
 const ing = (id: string) => INGREDIENTS.find(i => i.id === id)!
 
 function activeMenus(state: GameState) {
@@ -28,7 +31,7 @@ export async function shopScreen() {
   const state = getState()
 
   const choices = INGREDIENTS.map(i => ({
-    name: `${i.name} — ${i.bulkCost} Ruby`,
+    name: `${i.name} — ${fmt(i.bulkCost)} Ruby`,
     value: i.id,
   }))
   choices.push({ name: chalk.red('<-- Back'), value: 'back' })
@@ -39,25 +42,42 @@ export async function shopScreen() {
   if (item === 'back') return mainMenu()
 
   const ref = ing(item)
-  if (state.rubyBalance < ref.bulkCost) {
-    console.log(chalk.red(`\nNot enough Ruby! You need ${ref.bulkCost} Ruby.`))
+  const maxQty = Math.floor(state.rubyBalance / ref.bulkCost)
+
+  const { qty } = await inquirer.prompt([{
+    type: 'number',
+    name: 'qty',
+    message: `Quantity (${fmt(ref.bulkCost)} Ruby each, max ${maxQty}):`,
+    default: 1,
+  }])
+  if (!qty || qty < 1) return shopScreen()
+
+  if (qty > maxQty) {
+    console.log(chalk.red(`\nNot enough Ruby! ${qty}x would cost ${fmt(ref.bulkCost * qty)} Ruby but you only have ${fmt(state.rubyBalance)} Ruby.`))
     await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Press Enter to continue...' }])
     return shopScreen()
   }
 
+  const totalCost = ref.bulkCost * qty
   const next = { ...state }
-  next.rubyBalance -= ref.bulkCost
+  next.rubyBalance -= totalCost
+
+  // One batch with combined quantity (FIFO-friendly: same dayBought)
   next.inventory.push({
     id: Math.random().toString(36).substr(2, 9),
     ingredientId: ref.id,
-    qty: ref.bulkUnit,
+    qty: ref.bulkUnit * qty,
     dayBought: next.currentDay,
   })
+
+  // TODO (frontend): Add batch-purchase UI — let player tick multiple
+  // ingredients and buy them all at once, like a supplier order form.
+
   if (!next.historicalPurchases.includes(ref.id)) {
     next.historicalPurchases.push(ref.id)
   }
 
-  console.log(chalk.green(`\nBought ${ref.name} for ${ref.bulkCost} Ruby!`))
+  console.log(chalk.green(`\nBought ${qty}x ${ref.name} for ${fmt(totalCost)} Ruby!`))
 
   // Check for new recipe unlocks
   const unlocks = checkRecipeUnlocks(next.historicalPurchases, next.unlockedMenuIds)
@@ -93,34 +113,52 @@ export async function menuScreen() {
     const s = state.activeMenus.find(pm => pm.menuId === id)!
     const c = calculateCOGM(m)
     return {
-      name: `${s.isActive ? chalk.green('[ON]') : chalk.red('[OFF]')} ${m.name} | Cost: ${c.toFixed(2)} | Sell: ${s.sellPrice} (${((s.sellPrice - c) / c * 100).toFixed(0)}% margin)`,
+      name: `${s.isActive ? chalk.green('[ON]') : chalk.red('[OFF]')} ${m.name} | Cost: ${fmt(c)} | Sell: ${fmt(s.sellPrice)} (${((s.sellPrice - c) / c * 100).toFixed(0)}% margin)`,
       value: id,
     }
   })
   choices.push({ name: chalk.red('<-- Back'), value: 'back' })
 
   const { sel } = await inquirer.prompt([{
-    type: 'select', name: 'sel', message: 'Select menu to edit:', choices,
+    type: 'select', name: 'sel', message: 'Select a menu to inspect:', choices,
   }])
   if (sel === 'back') return mainMenu()
 
   const menuRef = MENU.find(x => x.id === sel)!
+  const setting = state.activeMenus.find(pm => pm.menuId === sel)!
+  const cogm = calculateCOGM(menuRef)
+
   console.log(chalk.blueBright(`\n--- RECIPE: ${menuRef.name} ---`))
   for (const line of menuRef.recipe) {
     const r = ing(line.ingredientId)
     console.log(`  ${r.name}: ${chalk.yellow(line.qtyNeeded)} ${r.unit}`)
   }
-  console.log(chalk.bold(`TOTAL COST (COGM): ${calculateCOGM(menuRef).toFixed(2)} Ruby\n`))
+  console.log(chalk.bold(`TOTAL COST (COGM): ${fmt(cogm)} Ruby`))
+  console.log(`Current price   : ${chalk.yellow(fmt(setting.sellPrice))} Ruby`)
+  console.log(`Status          : ${setting.isActive ? chalk.green('Active') : chalk.red('Inactive')}`)
+  console.log(`Margin          : ${((setting.sellPrice - cogm) / cogm * 100).toFixed(1)}%`)
 
+  const { action } = await inquirer.prompt([{
+    type: 'select',
+    name: 'action',
+    message: 'What would you like to do?',
+    choices: [
+      { name: chalk.red('← Back to menu list'), value: 'back' },
+      { name: '✏ Edit price / toggle availability', value: 'edit' },
+    ],
+  }])
+  if (action === 'back') return menuScreen()
+
+  // Edit mode
   const { toggle, newPrice } = await inquirer.prompt([
-    { type: 'confirm', name: 'toggle', message: 'Make this menu Active (available for sale)?', default: true },
-    { type: 'number', name: 'newPrice', message: 'Enter new selling price (Ruby):' },
+    { type: 'confirm', name: 'toggle', message: 'Make this menu Active (available for sale)?', default: setting.isActive },
+    { type: 'number', name: 'newPrice', message: 'Enter new selling price (Ruby):', default: setting.sellPrice },
   ])
 
   const next = { ...state }
   const idx = next.activeMenus.findIndex(pm => pm.menuId === sel)
   next.activeMenus[idx].isActive = toggle
-  if (!isNaN(newPrice)) next.activeMenus[idx].sellPrice = newPrice
+  if (!isNaN(newPrice) && newPrice > 0) next.activeMenus[idx].sellPrice = newPrice
   setState(next)
 
   return menuScreen()
@@ -149,7 +187,7 @@ export async function inventoryScreen() {
     for (const [id, batches] of Object.entries(grouped)) {
       const ref = ing(id)
       const total = batches.reduce((s, b) => s + b.qty, 0)
-      console.log(chalk.bold(ref.name) + ` — Total: ${chalk.yellow(total)} ${ref.unit}`)
+      console.log(chalk.bold(ref.name) + ` — Total: ${chalk.yellow(fmt(total))} ${ref.unit}`)
       batches.forEach((b, i) => {
         const age = state.currentDay - b.dayBought
         const expires = !isFinite(ref.shelfLifeDays)
@@ -157,7 +195,7 @@ export async function inventoryScreen() {
           : ref.shelfLifeDays - age > 0
             ? chalk.green(`${ref.shelfLifeDays - age} days left`)
             : chalk.red(`EXPIRED (${age - ref.shelfLifeDays} day(s) ago)`)
-        console.log(`  Batch #${i + 1}: ${b.qty} ${ref.unit} (bought day ${b.dayBought}, ${expires})`)
+        console.log(`  Batch #${i + 1}: ${fmt(b.qty)} ${ref.unit} (bought day ${b.dayBought}, ${expires})`)
       })
       console.log('')
     }
@@ -218,13 +256,13 @@ export async function advanceScreen() {
   console.log(`Customers          : ${r.cupsSold} served, ${totalW} walkout(s) (of ${CONSTANTS.BASE_DAILY_TRAFFIC})`)
   console.log(chalk.dim(`   Staff capacity : ${capacity} cups`))
   console.log(`Cups Sold          : ${r.cupsSold}`)
-  console.log(`Gross Revenue      : ${chalk.green(`+${r.grossRevenue.toFixed(2)}`)} Ruby`)
-  console.log(`Cost of Goods      : ${chalk.red(`-${r.cogs.toFixed(2)}`)} Ruby`)
-  console.log(`Operational Cost   : ${chalk.red(`-${r.opex.toFixed(2)}`)} Ruby`)
+  console.log(`Gross Revenue      : ${chalk.green(`+${fmt(r.grossRevenue)}`)} Ruby`)
+  console.log(`Cost of Goods      : ${chalk.red(`-${fmt(r.cogs)}`)} Ruby`)
+  console.log(`Operational Cost   : ${chalk.red(`-${fmt(r.opex)}`)} Ruby`)
   if (r.spoilageLoss > 0) {
-    console.log(`Spoilage Loss      : ${chalk.red(`-${r.spoilageLoss.toFixed(2)}`)} Ruby (${r.expiredIngredients.join(', ')})`)
+    console.log(`Spoilage Loss      : ${chalk.red(`-${fmt(r.spoilageLoss)}`)} Ruby (${r.expiredIngredients.join(', ')})`)
   }
-  const pStr = r.netProfit >= 0 ? chalk.green(`+${r.netProfit.toFixed(2)}`) : chalk.red(`${r.netProfit.toFixed(2)}`)
+  const pStr = r.netProfit >= 0 ? chalk.green(`+${fmt(r.netProfit)}`) : chalk.red(`${fmt(r.netProfit)}`)
   console.log(chalk.bold(`NET PROFIT         : ${pStr} Ruby`))
 
   console.log(chalk.bold.blue(`\n--- WALKOUTS ---`))
@@ -261,11 +299,11 @@ export async function hireScreen() {
   console.log(
     `Barista: ${state.hasBarista ? chalk.green('Employed') : chalk.red('Not hired')}`,
   )
-  console.log(`  └ Wage: ${CONSTANTS.STAFF.BARISTA.dailyWage} Ruby/day | Capacity: +${CONSTANTS.STAFF.BARISTA.capacityBonus} cups`)
+  console.log(`  └ Wage: ${fmt(CONSTANTS.STAFF.BARISTA.dailyWage)} Ruby/day | Capacity: +${CONSTANTS.STAFF.BARISTA.capacityBonus} cups`)
   console.log(
     `Cashier: ${state.hasCashier ? chalk.green('Employed') : chalk.red('Not hired')}`,
   )
-  console.log(`  └ Wage: ${CONSTANTS.STAFF.CASHIER.dailyWage} Ruby/day | Capacity: +${CONSTANTS.STAFF.CASHIER.capacityBonus} cups`)
+  console.log(`  └ Wage: ${fmt(CONSTANTS.STAFF.CASHIER.dailyWage)} Ruby/day | Capacity: +${CONSTANTS.STAFF.CASHIER.capacityBonus} cups`)
 
   const curCap =
     (state.hasBarista ? CONSTANTS.STAFF.BARISTA.capacityBonus : 0) +
