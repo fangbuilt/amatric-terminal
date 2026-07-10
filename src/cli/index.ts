@@ -1,12 +1,7 @@
 import inquirer from 'inquirer'
 import chalk from 'chalk'
 import { getState } from '../core/state/gameStore'
-import { shopRoute } from './routes/shop'
-import { menuRoute } from './routes/menu'
-import { inventoryRoute } from './routes/inventory'
-import { advanceRoute } from './routes/advance'
-import { hireRoute } from './routes/hire'
-import { historyRoute } from './routes/history'
+import { shopRoute, menuRoute, inventoryRoute, advanceRoute, hireRoute, historyRoute } from './routes'
 import { displayHeader } from './components/displayHeader'
 import { showIntro } from './components/showIntro'
 

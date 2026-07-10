@@ -1,0 +1,179 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Card, CardHeader, CardContent, CardFooter,
+  Button, ProgressBar, Surface, Chip, Separator,
+} from '@heroui/react'
+import { RotateCcw, Heart, Megaphone, Target, CircleDollarSign, TrendingUp } from 'lucide-react'
+import type { GameState } from '../../core/types/gameState'
+import { getState, subscribe } from '../../core/state/gameStore'
+import { CONSTANTS } from '../../core/constants/data'
+import { fmt } from '../utils'
+
+export default function MetaPage() {
+  const [state, setState] = useState<GameState>(getState())
+  useEffect(() => subscribe(s => setState({ ...s })), [])
+  const navigate = useNavigate()
+
+  const beMet = state.accumulatedNetProfit >= CONSTANTS.BREAK_EVEN.target
+  const beProgress = beMet
+    ? 100
+    : Math.min(100, (state.accumulatedNetProfit / CONSTANTS.BREAK_EVEN.target) * 100)
+  const daysRemaining = Math.max(0, CONSTANTS.BREAK_EVEN.days - state.currentDay + 1)
+
+  const replayIntro = () => {
+    localStorage.removeItem('amatric_intro_shown')
+    window.location.reload()
+  }
+
+  return (
+    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4 max-w-lg mx-auto">
+      {/* Stats card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-1.5">
+            <TrendingUp className="size-4 text-amber-500" />
+            <span className="text-sm font-bold">Business Overview</span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Break-even progress */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted">Break-even target</span>
+              <span className="font-semibold">
+                {fmt(state.accumulatedNetProfit)} / {fmt(CONSTANTS.BREAK_EVEN.target)} Ruby
+              </span>
+            </div>
+            <ProgressBar value={beProgress} color={beMet ? 'success' : 'warning'} size="md">
+              <ProgressBar.Track>
+                <ProgressBar.Fill />
+              </ProgressBar.Track>
+            </ProgressBar>
+            <div className="flex items-center justify-between text-[10px]">
+              <span className={beMet ? 'text-emerald-500' : 'text-warning'}>
+                {beMet ? 'Target met!' : `${daysRemaining} day${daysRemaining > 1 ? 's' : ''} remaining`}
+              </span>
+              <span className="text-muted">{Math.round(beProgress)}%</span>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
+              <p className="text-[10px] text-muted uppercase tracking-wider">Day</p>
+              <p className="text-lg font-bold">{state.currentDay}</p>
+            </Surface>
+            <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
+              <p className="text-[10px] text-muted uppercase tracking-wider">Balance</p>
+              <p className="text-lg font-bold text-emerald-500">{fmt(state.rubyBalance)}</p>
+            </Surface>
+            <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
+              <p className="text-[10px] text-muted uppercase tracking-wider">Gross Revenue</p>
+              <p className="text-lg font-bold">{fmt(state.accumulatedGrossRevenue)}</p>
+            </Surface>
+            <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
+              <p className="text-[10px] text-muted uppercase tracking-wider">Net Profit</p>
+              <p className={`text-lg font-bold ${state.accumulatedNetProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
+                {state.accumulatedNetProfit >= 0 ? '+' : ''}{fmt(state.accumulatedNetProfit)}
+              </p>
+            </Surface>
+          </div>
+
+          {/* Daily history count */}
+          <div className="text-center text-xs text-muted">
+            {state.dailyHistory.length} day{state.dailyHistory.length !== 1 ? 's' : ''} recorded
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bayu's Mission (replay intro) */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-1.5">
+            <Target className="size-4 text-amber-500" />
+            <span className="text-sm font-bold">Bayu's Mission</span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-xs text-muted">
+          <p>
+            Bayu, a full-ride business student, was granted 5,000 Ruby by the campus
+            to launch a coffee stall for his final grade. He must break even
+            (accumulate {fmt(CONSTANTS.BREAK_EVEN.target)} Ruby net profit) within {CONSTANTS.BREAK_EVEN.days} days.
+          </p>
+          <p>
+            The campus provides the space and equipment. Bayu must hire a barista,
+            manage inventory, set prices, and satisfy 100 daily customers.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full"
+            onPress={replayIntro}
+          >
+            <RotateCcw className="size-3.5" />
+            Replay Intro
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Support / Donate */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-1.5">
+            <Heart className="size-4 text-red-500" />
+            <span className="text-sm font-bold">Support the Author</span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            isDisabled
+          >
+            <CircleDollarSign className="size-3.5" />
+            Buy Me a Coffee
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            isDisabled
+          >
+            <CircleDollarSign className="size-3.5" />
+            PayPal
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            isDisabled
+          >
+            <CircleDollarSign className="size-3.5" />
+            Saweria
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Patch Notes */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-1.5">
+            <Megaphone className="size-4 text-amber-500" />
+            <span className="text-sm font-bold">Patch Notes</span>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted text-center py-2">
+            Stay tuned for updates. The game creator controls the meta.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

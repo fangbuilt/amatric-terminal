@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { getState } from '../../core/state/gameStore'
 import { sumBy, groupBy, sortBy } from 'lodash-es'
 import { displayHeader } from '../components/displayHeader'
-import { fmt, ing, activeMenus, getExpiringTomorrow } from '../utils'
+import { fmt, getIngredient, activeMenus, getExpiringTomorrow } from '../utils'
 import { mainMenu } from '../index'
 
 export async function inventoryRoute() {
@@ -19,7 +19,7 @@ export async function inventoryRoute() {
     console.log('Your warehouse is completely empty.')
   } else {
     for (const [id, batches] of Object.entries(grouped)) {
-      const ingredient = ing(id)
+      const ingredient = getIngredient(id)
       const total = sumBy(batches, 'qty')
       console.log(chalk.bold(ingredient.name) + ` — Total: ${chalk.yellow(fmt(total))} ${ingredient.unit}`)
       batches.forEach((batch, i) => {
@@ -40,7 +40,7 @@ export async function inventoryRoute() {
   if (expiringTomorrow.length > 0) {
     console.log(chalk.bold.red('=== EXPIRING TOMORROW ==='))
     for (const name of expiringTomorrow) {
-      console.log(`  ${chalk.red('⚠')} ${chalk.red(name)}`)
+      console.log(`  ${chalk.red('!')} ${chalk.red(name)}`)
     }
     console.log('')
   }
@@ -54,7 +54,7 @@ export async function inventoryRoute() {
   if (missing.length > 0) {
     console.log(chalk.bold.red('=== OUT OF STOCK (Needed for active menus) ==='))
     for (const id of missing) {
-      const ingredient = ing(id)
+      const ingredient = getIngredient(id)
       const usedIn = active
         .filter(menu => menu.recipe.some(item => item.ingredientId === id))
         .map(menu => menu.name)
@@ -64,7 +64,7 @@ export async function inventoryRoute() {
   }
 
   if (missing.length === 0 && state.inventory.length > 0) {
-    console.log(chalk.green('All items for active menus are in stock ✓\n'))
+    console.log(chalk.green('All items for active menus are in stock.\n'))
   }
 
   await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Press Enter to continue...' }])

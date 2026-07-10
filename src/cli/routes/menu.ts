@@ -4,7 +4,7 @@ import { getState, setState } from '../../core/state/gameStore'
 import { MENU_BY_ID } from '../../core/constants/lookup'
 import { calculateCOGM } from '../../core/rules/calculateCogm'
 import { displayHeader } from '../components/displayHeader'
-import { fmt, ing } from '../utils'
+import { fmt, getIngredient } from '../utils'
 import { mainMenu } from '../index'
 
 export async function menuRoute() {
@@ -40,7 +40,7 @@ export async function menuRoute() {
   // View recipe & measures
   console.log(chalk.blueBright(`\n--- RECIPE: ${menu.name} ---`))
   for (const line of menu.recipe) {
-    const ingredient = ing(line.ingredientId)
+    const ingredient = getIngredient(line.ingredientId)
     console.log(`  ${chalk.yellow(line.qtyNeeded)} ${ingredient.unit} — ${ingredient.name}`)
   }
   console.log(chalk.bold(`\nCOST OF GOODS: ${fmt(cogm)} Ruby`))

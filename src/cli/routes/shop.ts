@@ -6,7 +6,7 @@ import { MENU_BY_ID } from '../../core/constants/lookup'
 import { checkRecipeUnlocks } from '../../core/rules/progression'
 import { calculateCOGM } from '../../core/rules/calculateCogm'
 import { displayHeader } from '../components/displayHeader'
-import { fmt, ing } from '../utils'
+import { fmt, getIngredient } from '../utils'
 import { mainMenu } from '../index'
 
 export async function shopRoute() {
@@ -24,7 +24,7 @@ export async function shopRoute() {
   }])
   if (selectedId === 'back') return mainMenu()
 
-  const ingredient = ing(selectedId)
+  const ingredient = getIngredient(selectedId)
   const maxQty = Math.floor(state.rubyBalance / ingredient.bulkCost)
 
   const { qty } = await inquirer.prompt([{

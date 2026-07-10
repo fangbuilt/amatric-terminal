@@ -2,11 +2,14 @@ import type { GameState } from '../core/types/gameState'
 import { MENU } from '../core/constants/data'
 import { INGREDIENT } from '../core/constants/lookup'
 
+/** Format a number as currency (Ruby). */
 export const fmt = (n: number) =>
   n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-export const ing = (id: string) => INGREDIENT.get(id)!
+/** Look up an ingredient definition by ID. */
+export const getIngredient = (id: string) => INGREDIENT.get(id)!
 
+/** Get menu definitions that are currently active (enabled for sale). */
 export const activeMenus = (state: GameState) =>
   MENU.filter(menuDef =>
     state.activeMenus.find(menuSetting => menuSetting.menuId === menuDef.id && menuSetting.isActive),
@@ -25,3 +28,9 @@ export const getExpiringTomorrow = (state: GameState): string[] => {
   }
   return names
 }
+
+/** Total quantity on hand for a given ingredient (summed across FIFO batches). */
+export const totalOnHand = (state: GameState, ingredientId: string): number =>
+  state.inventory
+    .filter(b => b.ingredientId === ingredientId)
+    .reduce((sum, b) => sum + Math.max(0, b.qty), 0)

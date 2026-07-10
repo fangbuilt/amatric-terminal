@@ -1,56 +1,86 @@
-import { sumBy } from 'lodash-es'
-import type { GameState, InventoryBatch } from '../types/gameState'
+import type { GameState } from '../types/gameState'
 import type { DailyReport } from '../types/dailyReport'
 import { CONSTANTS, MENU } from '../constants/data'
-import { INGREDIENT } from '../constants/lookup'
 import { calculateCOGM } from './calculateCogm'
 import { willCustomerBuy } from './willCustomerBuy'
 import { deductFifo } from './deductFifo'
 import { checkExpiry } from './checkExpiry'
+import { pickMenu } from './pickMenu'
+import { hasStock } from './hasStock'
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+/** Deep-clone state to simulate day without mutation side effects. */
+const cloneState = (state: GameState): GameState =>
+  JSON.parse(JSON.stringify(state))
 
-type Menu = (typeof MENU)[number]
-
-function pickMenu(active: Menu[]): Menu {
-  const total = sumBy(active, 'basePopularity')
-  let roll = Math.random() * total
-  for (const m of active) {
-    roll -= m.basePopularity
-    if (roll <= 0) return m
-  }
-  return active[active.length - 1]
+/** Calculate staff opex for the day. */
+const calculateOpex = (state: GameState): number => {
+  let opex = 0
+  if (state.hasBarista) opex += CONSTANTS.STAFF.BARISTA.dailyWage
+  if (state.hasCashier) opex += CONSTANTS.STAFF.CASHIER.dailyWage
+  return opex
 }
 
-function hasStock(
-  inventory: InventoryBatch[],
-  recipe: Menu['recipe'],
-  missing: Set<string>,
-): boolean {
-  for (const item of recipe) {
-    const onHand = sumBy(
-      inventory.filter(b => b.ingredientId === item.ingredientId),
-      'qty',
-    )
-    if (onHand < item.qtyNeeded) {
-      const ingredient = INGREDIENT.get(item.ingredientId)
-      if (ingredient) missing.add(ingredient.name)
-      return false
-    }
+/** Calculate max cups the cafe can produce in a day. */
+const calculateCapacity = (state: GameState): number => {
+  let cap = 0
+  if (state.hasBarista) cap += CONSTANTS.STAFF.BARISTA.capacityBonus
+  if (state.hasCashier) cap += CONSTANTS.STAFF.CASHIER.capacityBonus
+  return cap
+}
+
+/** Filter to currently active menu definitions. */
+const getActiveMenus = (state: GameState) =>
+  MENU.filter(m =>
+    state.activeMenus.find(s => s.menuId === m.id && s.isActive),
+  )
+
+/** Serve one customer at a time. Returns true if a sale was made. */
+const serveCustomer = (
+  state: GameState,
+  report: DailyReport,
+  activeMenus: typeof MENU,
+  outOfStock: Set<string>,
+): boolean => {
+  const menu = pickMenu(activeMenus)
+  const setting = state.activeMenus.find(s => s.menuId === menu.id)!
+  const cogm = calculateCOGM(menu)
+
+  if (!willCustomerBuy(setting.sellPrice, cogm)) {
+    report.walkouts.tooExpensive++
+    return false
   }
+  if (!hasStock(state.inventory, menu.recipe, outOfStock)) {
+    report.walkouts.outOfStock++
+    return false
+  }
+
+  deductFifo(state.inventory, menu.recipe)
+  report.cupsSold++
+  report.grossRevenue += setting.sellPrice
+  report.cogs += cogm
   return true
 }
 
+/** Close the day's finances. */
+const closeDayFinances = (state: GameState, report: DailyReport): void => {
+  report.netProfit =
+    report.grossRevenue - report.cogs - report.opex - report.spoilageLoss
+  state.rubyBalance += report.grossRevenue - report.opex
+  state.accumulatedGrossRevenue += report.grossRevenue
+  state.accumulatedNetProfit += report.netProfit
+  state.dailyHistory.push(report)
+  state.currentDay++
+  if (state.rubyBalance < 0) state.isBankrupt = true
+}
+
 // ---------------------------------------------------------------------------
-// Day simulation
+// Public API
 // ---------------------------------------------------------------------------
 
 export const simulateDay = (
   state: GameState,
 ): { newState: GameState; report: DailyReport } => {
-  const cloned = JSON.parse(JSON.stringify(state)) as GameState
+  const cloned = cloneState(state)
 
   const report: DailyReport = {
     grossRevenue: 0,
@@ -65,68 +95,32 @@ export const simulateDay = (
   }
 
   // 1. Staff costs
-  if (cloned.hasBarista) report.opex += CONSTANTS.STAFF.BARISTA.dailyWage
-  if (cloned.hasCashier) report.opex += CONSTANTS.STAFF.CASHIER.dailyWage
+  report.opex = calculateOpex(cloned)
+  const capacity = calculateCapacity(cloned)
+  const active = getActiveMenus(cloned)
 
-  const capacity =
-    (cloned.hasBarista ? CONSTANTS.STAFF.BARISTA.capacityBonus : 0) +
-    (cloned.hasCashier ? CONSTANTS.STAFF.CASHIER.capacityBonus : 0)
-
-  const activeMenus = MENU.filter(m =>
-    cloned.activeMenus.find(menuSetting => menuSetting.menuId === m.id && menuSetting.isActive),
-  )
-
-  // 2. Customer service
+  // 2. Customer service loop
   const outOfStock = new Set<string>()
-
   for (let i = 0; i < CONSTANTS.BASE_DAILY_TRAFFIC; i++) {
-    if (activeMenus.length === 0) break
+    if (active.length === 0) break
     if (report.cupsSold >= capacity) {
       report.walkouts.queueTooLong++
       continue
     }
-
-    const menu = pickMenu(activeMenus)
-    const setting = cloned.activeMenus.find(menuSetting => menuSetting.menuId === menu.id)!
-    const cogm = calculateCOGM(menu)
-
-    if (!willCustomerBuy(setting.sellPrice, cogm)) {
-      report.walkouts.tooExpensive++
-      continue
-    }
-    if (!hasStock(cloned.inventory, menu.recipe, outOfStock)) {
-      report.walkouts.outOfStock++
-      continue
-    }
-
-    deductFifo(cloned.inventory, menu.recipe)
-    report.cupsSold++
-    report.grossRevenue += setting.sellPrice
-    report.cogs += cogm
+    serveCustomer(cloned, report, active, outOfStock)
   }
-
   report.outOfStockItems = [...outOfStock]
 
-  // 3. Expiration
+  // 3. Handle expiration
   const expired = checkExpiry(cloned.inventory, cloned.currentDay)
   report.spoilageLoss = expired.spoilageLoss
   report.expiredIngredients = expired.expiredIngredients
 
-  // 4. Cleanup
+  // 4. Clean up empty batches
   cloned.inventory = cloned.inventory.filter(b => b.qty > 0)
 
-  // 5. Financial close
-  report.netProfit =
-    report.grossRevenue - report.cogs - report.opex - report.spoilageLoss
-  cloned.rubyBalance += report.grossRevenue - report.opex
-
-  // 6. Accumulate & archive
-  cloned.accumulatedGrossRevenue += report.grossRevenue
-  cloned.accumulatedNetProfit += report.netProfit
-  cloned.dailyHistory.push(report)
-
-  cloned.currentDay++
-  if (cloned.rubyBalance < 0) cloned.isBankrupt = true
+  // 5. Close finances
+  closeDayFinances(cloned, report)
 
   return { newState: cloned, report }
 }
