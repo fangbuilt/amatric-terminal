@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { getState } from '../../core/state/gameStore'
 import { sumBy, groupBy, sortBy } from 'lodash-es'
 import { displayHeader } from '../components/displayHeader'
-import { fmt, ing, activeMenus } from '../utils'
+import { fmt, ing, activeMenus, getExpiringTomorrow } from '../utils'
 import { mainMenu } from '../index'
 
 export async function inventoryRoute() {
@@ -33,6 +33,16 @@ export async function inventoryRoute() {
       })
       console.log('')
     }
+  }
+
+  // D-1 expiry warning
+  const expiringTomorrow = getExpiringTomorrow(state)
+  if (expiringTomorrow.length > 0) {
+    console.log(chalk.bold.red('=== EXPIRING TOMORROW ==='))
+    for (const name of expiringTomorrow) {
+      console.log(`  ${chalk.red('⚠')} ${chalk.red(name)}`)
+    }
+    console.log('')
   }
 
   // Items needed by active menus but completely out of stock

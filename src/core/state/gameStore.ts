@@ -12,6 +12,9 @@ const initialState: GameState = {
   hasBarista: true,
   hasCashier: false,
   isBankrupt: false,
+  accumulatedGrossRevenue: 0,
+  accumulatedNetProfit: 0,
+  dailyHistory: [],
 }
 
 const store = createStore<GameState>(() => initialState)

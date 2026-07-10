@@ -92,9 +92,18 @@ export async function advanceRoute() {
     console.log(chalk.yellow('➖ Broke even. Room for improvement.'))
   }
 
+  // Break-even deadline check
+  if (previousState.currentDay >= CONSTANTS.BREAK_EVEN.days && newState.accumulatedNetProfit < CONSTANTS.BREAK_EVEN.target) {
+    console.log(chalk.bgRed.white.bold('\n 🚨 30-DAY DEADLINE FAILED! 🚨 \n'))
+    console.log(chalk.red(`Accumulated net profit: ${fmt(newState.accumulatedNetProfit)} Ruby`))
+    console.log(chalk.red(`Required: ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby`))
+    console.log(chalk.red('\nThe campus revoked your license. Bayu did not pass.'))
+    process.exit(0)
+  }
+
   if (newState.isBankrupt) {
     console.log(chalk.bgRed.white.bold('\n 🚨 BAYU IS BANKRUPT! 🚨 \n'))
-    console.log('The campus has revoked your license.')
+    console.log('The campus has revoked your license due to negative cash flow.')
     process.exit(0)
   }
 

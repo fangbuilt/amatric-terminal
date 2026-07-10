@@ -25,11 +25,16 @@ export async function hireRoute() {
     (state.hasCashier ? CONSTANTS.STAFF.CASHIER.capacityBonus : 0)
   console.log(chalk.cyan(`\nTotal staff capacity: ${currentCapacity} cups/day`))
 
+  const severanceCost = CONSTANTS.STAFF.CASHIER.dailyWage * 30 * CONSTANTS.SEVERANCE_MULTIPLIER
+
   const options: { name: string; value: string }[] = []
   if (!state.hasCashier) {
     options.push({ name: '💰 Hire Cashier (70 Ruby/day)', value: 'hire' })
   } else {
-    options.push({ name: '⚠ Fire Cashier (save 70 Ruby/day)', value: 'fire' })
+    options.push({
+      name: `⚠ Fire Cashier (pay ${fmt(severanceCost)} Ruby severance pay)`,
+      value: 'fire',
+    })
   }
   options.push({ name: chalk.red('<-- Back'), value: 'back' })
 
@@ -43,8 +48,14 @@ export async function hireRoute() {
     next.hasCashier = true
     console.log(chalk.green('\n✅ Cashier hired! They start tomorrow.'))
   } else {
+    if (next.rubyBalance < severanceCost) {
+      console.log(chalk.red(`\n❌ Not enough Ruby! Severance pay costs ${fmt(severanceCost)} Ruby but you only have ${fmt(next.rubyBalance)} Ruby.`))
+      await inquirer.prompt([{ type: 'input', name: 'enter', message: 'Press Enter to continue...' }])
+      return hireRoute()
+    }
+    next.rubyBalance -= severanceCost
     next.hasCashier = false
-    console.log(chalk.yellow('\n👋 Cashier fired. You\'ll handle the counter yourself.'))
+    console.log(chalk.yellow(`\n👋 Cashier fired. Paid ${fmt(severanceCost)} Ruby severance pay.`))
   }
   setState(next)
 

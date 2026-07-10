@@ -11,6 +11,8 @@ export interface PlayerMenuSetting {
   sellPrice: number
 }
 
+import type { DailyReport } from './dailyReport'
+
 export interface GameState {
   currentDay: number
   rubyBalance: number
@@ -21,4 +23,7 @@ export interface GameState {
   hasBarista: boolean
   hasCashier: boolean
   isBankrupt: boolean
+  accumulatedGrossRevenue: number
+  accumulatedNetProfit: number
+  dailyHistory: DailyReport[]
 }

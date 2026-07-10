@@ -119,6 +119,12 @@ export const simulateDay = (
   report.netProfit =
     report.grossRevenue - report.cogs - report.opex - report.spoilageLoss
   cloned.rubyBalance += report.grossRevenue - report.opex
+
+  // 6. Accumulate & archive
+  cloned.accumulatedGrossRevenue += report.grossRevenue
+  cloned.accumulatedNetProfit += report.netProfit
+  cloned.dailyHistory.push(report)
+
   cloned.currentDay++
   if (cloned.rubyBalance < 0) cloned.isBankrupt = true
 

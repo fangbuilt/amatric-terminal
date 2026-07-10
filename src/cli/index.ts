@@ -6,6 +6,7 @@ import { menuRoute } from './routes/menu'
 import { inventoryRoute } from './routes/inventory'
 import { advanceRoute } from './routes/advance'
 import { hireRoute } from './routes/hire'
+import { historyRoute } from './routes/history'
 import { displayHeader } from './components/displayHeader'
 import { showIntro } from './components/showIntro'
 
@@ -33,6 +34,7 @@ export async function mainMenu() {
       { name: '📋 Manage Menu & Pricing', value: 'menu' },
       { name: '📦 Check Inventory', value: 'inventory' },
       { name: '👤 Manage Staff', value: 'hire' },
+      { name: '📊 Financial History', value: 'history' },
       new inquirer.Separator(),
       { name: chalk.bold.green('▶ Advance Day (Open Cafe)'), value: 'advance' },
       { name: chalk.red('Exit Game'), value: 'exit' },
@@ -44,6 +46,7 @@ export async function mainMenu() {
     case 'menu': await menuRoute(); break
     case 'inventory': await inventoryRoute(); break
     case 'hire': await hireRoute(); break
+    case 'history': await historyRoute(); break
     case 'advance': await advanceRoute(); break
     case 'exit': process.exit(0)
   }

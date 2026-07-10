@@ -53,8 +53,11 @@ export const MENU: DrinkMenu[] = [
 export const CONSTANTS = {
   STARTING_CAPITAL: 5000,
   BASE_DAILY_TRAFFIC: 100,
+  BREAK_EVEN: { target: 5000, days: 30 },
   STAFF: {
     BARISTA: { dailyWage: 100, capacityBonus: 100 },
     CASHIER: { dailyWage: 70, capacityBonus: 60 },
   },
+  /** Pesangon multiplier: months × 30 days × daily wage */
+  SEVERANCE_MULTIPLIER: 3,
 }

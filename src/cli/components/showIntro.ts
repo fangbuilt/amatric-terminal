@@ -37,6 +37,10 @@ export async function showIntro() {
       '',
       chalk.red('Ingredients expire. Milk goes bad in 4 days.'),
       chalk.red('Overspend unwisely and it\'s game over.'),
+      '',
+      chalk.bold.yellow('THE INVESTOR: CAMPUS') + chalk.dim(' — break-even in 30 days.'),
+      chalk.dim(`Accumulated net profit of ${chalk.yellow('5,000 Ruby')} required.`),
+      chalk.dim('Fail and Bayu forfeits his license.'),
     ],
     [
       '',
@@ -52,6 +56,10 @@ export async function showIntro() {
       '',
       chalk.bold.yellow('The game creator controls the meta.') + chalk.dim(' Ingredient costs'),
       chalk.dim('may fluctuate, new menus may drop. Stay tuned.'),
+      '',
+      chalk.bold.yellow('THE INVESTOR: CAMPUS') + chalk.dim(' — break-even in 30 days.'),
+      chalk.dim(`Accumulated net profit of ${chalk.yellow('5,000 Ruby')} required.`),
+      chalk.dim('Fail and Bayu forfeits his license.'),
     ],
     [
       '',
