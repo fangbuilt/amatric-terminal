@@ -63,7 +63,7 @@ export default function HistoryPage() {
 
   return (
     <div
-      className="flex flex-col gap-3 p-3 pb-24 sm:p-4"
+      className="flex flex-col gap-3"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >

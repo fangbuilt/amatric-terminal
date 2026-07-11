@@ -34,7 +34,7 @@ export default function InventoryPage() {
   const outOfStock = [...needed].filter(id => !stocked.has(id))
 
   return (
-    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4">
+    <div className="flex flex-col gap-3">
       {/* Expiring tomorrow alert */}
       {expiringTomorrow.length > 0 && (
         <Surface variant="tertiary" className="border border-danger/40 px-3 py-2 rounded-xl">

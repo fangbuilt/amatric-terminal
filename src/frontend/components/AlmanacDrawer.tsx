@@ -72,7 +72,7 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
           <DrawerHeader>
             <DrawerHeading>Almanac</DrawerHeading>
           </DrawerHeader>
-          <DrawerBody className="bg-background p-6 rounded-md">
+          <DrawerBody className="bg-[#f3f2ef] dark:bg-[#0f0f0f] p-6 rounded-md">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {unlockedMenus.map(menu => {
                 const setting = state.activeMenus.find(m => m.menuId === menu.id)!

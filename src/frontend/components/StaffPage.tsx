@@ -49,7 +49,7 @@ export default function StaffPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4 max-w-lg mx-auto">
+    <div className="flex flex-col gap-3 max-w-lg mx-auto">
       {/* Staff info */}
       <Card>
         <CardHeader>

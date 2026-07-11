@@ -138,7 +138,7 @@ function Layout() {
               </Button>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto py-3">
             <Outlet />
           </main>
         </div>

@@ -95,9 +95,9 @@ export default function ShopPage() {
   const showCart = cartTotal > 0
 
   return (
-    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4">
+    <div className="flex flex-col gap-3">
       {/* Search + filter */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <TextField
           className="flex-1"
           value={search}
@@ -106,7 +106,7 @@ export default function ShopPage() {
           <Input placeholder="Search ingredients..." />
         </TextField>
         <Select
-          className="w-40"
+          className="sm:w-40"
           placeholder="Filter"
           selectedKey={filter}
           onSelectionChange={(k) => setFilter(k as string)}
@@ -135,7 +135,7 @@ export default function ShopPage() {
                   <div className="aspect-square w-full max-w-24 rounded-xl bg-stone-200 dark:bg-stone-700" />
                 </div>
               <CardHeader>
-                <div className="flex items-center justify-center gap-1.5 w-full">
+                <div className="flex items-center justify-center gap-1.5">
                   <span className="font-medium text-sm truncate">{i.name}</span>
                   {alreadyBought && (
                     <span className="text-[10px] text-emerald-500 shrink-0">owned</span>
@@ -147,7 +147,7 @@ export default function ShopPage() {
                   {fmt(i.bulkCost)} Ruby
                 </p>
               </CardContent>
-              <CardFooter className="flex items-center justify-center gap-3">
+              <CardFooter className="flex flex-col items-center gap-1.5">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="secondary"

@@ -16,7 +16,7 @@ type Tab = (typeof tabs)[number]['id']
 
 export default function ResourcesPage() {
   return (
-    <Tabs className="w-full mt-2 px-3" defaultSelectedKey="shop">
+    <Tabs className="w-full mt-3 px-3" defaultSelectedKey="shop">
       <Tabs.ListContainer className='bg-stone-200 dark:bg-stone-700'>
         <Tabs.List aria-label="Resources">
           {tabs.map(tab => {
@@ -33,10 +33,10 @@ export default function ResourcesPage() {
           })}
         </Tabs.List>
       </Tabs.ListContainer>
-      <Tabs.Panel id="shop" className="outline-none"><ShopPage /></Tabs.Panel>
-      <Tabs.Panel id="inventory" className="outline-none"><InventoryPage /></Tabs.Panel>
-      <Tabs.Panel id="staff" className="outline-none"><StaffPage /></Tabs.Panel>
-      <Tabs.Panel id="history" className="outline-none"><HistoryPage /></Tabs.Panel>
+      <Tabs.Panel id="shop" className="outline-none p-3 pb-24 sm:p-4 mx-auto max-w-screen-lg"><ShopPage /></Tabs.Panel>
+      <Tabs.Panel id="inventory" className="outline-none p-3 pb-24 sm:p-4 mx-auto max-w-screen-lg"><InventoryPage /></Tabs.Panel>
+      <Tabs.Panel id="staff" className="outline-none p-3 pb-24 sm:p-4 mx-auto max-w-screen-lg"><StaffPage /></Tabs.Panel>
+      <Tabs.Panel id="history" className="outline-none p-3 pb-24 sm:p-4 mx-auto max-w-screen-lg"><HistoryPage /></Tabs.Panel>
     </Tabs>
   )
 }
