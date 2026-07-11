@@ -27,19 +27,19 @@ export default function MetaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4 mx-auto max-w-screen-lg">
+    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4">
       {/* Stats card - full width */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-1.5">
             <TrendingUp className="size-4 text-amber-500" />
-            <span className="text-sm font-bold">Business Overview</span>
+            <span className="font-bold">Business Overview</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* Break-even progress */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between">
               <span className="text-muted">Break-even target</span>
               <span className="font-semibold">
                 {fmt(state.accumulatedNetProfit)} / {fmt(CONSTANTS.BREAK_EVEN.target)} Ruby
@@ -50,7 +50,7 @@ export default function MetaPage() {
                 <ProgressBar.Fill />
               </ProgressBar.Track>
             </ProgressBar>
-            <div className="flex items-center justify-between text-[10px]">
+            <div className="flex items-center justify-between">
               <span className={beMet ? 'text-emerald-500' : 'text-warning'}>
                 {beMet ? 'Target met!' : `${daysRemaining} day${daysRemaining > 1 ? 's' : ''} remaining`}
               </span>
@@ -63,27 +63,27 @@ export default function MetaPage() {
           {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
             <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
-              <p className="text-[10px] text-muted uppercase tracking-wider">Day</p>
-              <p className="text-lg font-bold">{state.currentDay}</p>
+              <p className="text-muted uppercase tracking-wider">Day</p>
+              <p className="font-bold">{state.currentDay}</p>
             </Surface>
             <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
-              <p className="text-[10px] text-muted uppercase tracking-wider">Balance</p>
-              <p className="text-lg font-bold text-emerald-500">{fmt(state.rubyBalance)}</p>
+              <p className="text-muted uppercase tracking-wider">Balance</p>
+              <p className="font-bold text-emerald-500">{fmt(state.rubyBalance)}</p>
             </Surface>
             <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
-              <p className="text-[10px] text-muted uppercase tracking-wider">Gross Revenue</p>
-              <p className="text-lg font-bold">{fmt(state.accumulatedGrossRevenue)}</p>
+              <p className="text-muted uppercase tracking-wider">Gross Revenue</p>
+              <p className="font-bold">{fmt(state.accumulatedGrossRevenue)}</p>
             </Surface>
             <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
-              <p className="text-[10px] text-muted uppercase tracking-wider">Net Profit</p>
-              <p className={`text-lg font-bold ${state.accumulatedNetProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
+              <p className="text-muted uppercase tracking-wider">Net Profit</p>
+              <p className={`font-bold ${state.accumulatedNetProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
                 {state.accumulatedNetProfit >= 0 ? '+' : ''}{fmt(state.accumulatedNetProfit)}
               </p>
             </Surface>
           </div>
 
           {/* Daily history count */}
-          <div className="text-center text-xs text-muted">
+          <div className="text-center text-muted">
             {state.dailyHistory.length} day{state.dailyHistory.length !== 1 ? 's' : ''} recorded
           </div>
         </CardContent>
@@ -97,10 +97,10 @@ export default function MetaPage() {
         <CardHeader>
           <div className="flex items-center gap-1.5">
             <Target className="size-4 text-amber-500" />
-            <span className="text-sm font-bold">Bayu's Mission</span>
+            <span className="font-bold">Bayu's Mission</span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2 text-xs text-muted">
+        <CardContent className="space-y-2 text-muted">
           <p>
             Bayu, a full-ride business student, was granted 5,000 Ruby by the campus
             to launch a coffee stall for his final grade. He must break even
@@ -129,7 +129,7 @@ export default function MetaPage() {
         <CardHeader>
           <div className="flex items-center gap-1.5">
             <Heart className="size-4 text-red-500" />
-            <span className="text-sm font-bold">Support the Author</span>
+            <span className="font-bold">Support the Author</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -168,11 +168,11 @@ export default function MetaPage() {
         <CardHeader>
           <div className="flex items-center gap-1.5">
             <Megaphone className="size-4 text-amber-500" />
-            <span className="text-sm font-bold">Patch Notes</span>
+            <span className="font-bold">Patch Notes</span>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-xs text-muted text-center py-2">
+          <p className="text-muted text-center py-2">
             Stay tuned for updates. The game creator controls the meta.
           </p>
         </CardContent>

@@ -101,17 +101,17 @@ export default function IntroOverlay({ onFinish }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="w-full max-w-lg max-h-full overflow-y-auto">
-        <div className="space-y-1 text-sm sm:text-base text-center">
+        <div className="space-y-1 sm:text-center">
           {p.lines.map((line, i) => {
             if (!line.text) return <br key={i} />
             return (
               <p
                 key={i}
                 className={
-                  line.bold ? 'font-bold text-lg' :
+                  line.bold ? 'font-bold' :
                   line.highlight ? 'text-amber-500 font-semibold' :
                   line.warning ? 'text-danger font-medium' :
-                  line.dim ? 'text-muted text-xs sm:text-sm' :
+                  line.dim ? 'text-muted sm:' :
                   ''
                 }
               >
@@ -130,7 +130,7 @@ export default function IntroOverlay({ onFinish }: Props) {
           {isLast ? 'Begin Game' : 'Continue'}
         </Button>
 
-        <p className="mt-3 text-center text-[10px] text-muted">
+        <p className="mt-3 text-center text-muted">
           {page + 1} / {pages.length}
         </p>
       </div>

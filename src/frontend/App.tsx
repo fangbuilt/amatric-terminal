@@ -21,8 +21,8 @@ export default function App() {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="max-w-sm text-center">
-          <h1 className="text-2xl font-bold text-danger mb-2">Game Over</h1>
-          <p className="text-muted text-sm mb-4">
+          <h1 className="font-bold text-danger mb-2">Game Over</h1>
+          <p className="text-muted mb-4">
             Bayu is bankrupt. The campus revoked your license due to negative cash flow.
           </p>
           <Button
@@ -52,13 +52,13 @@ export default function App() {
           {breakEvenFailed && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
               <div className="max-w-sm text-center rounded-2xl bg-surface p-6 border border-danger/50">
-                <h1 className="text-xl font-bold text-danger mb-2">30-Day Deadline Failed</h1>
-                <p className="text-sm text-muted mb-4">
+                <h1 className="font-bold text-danger mb-2">30-Day Deadline Failed</h1>
+                <p className="text-muted mb-4">
                   Accumulated net profit: {fmt(state.accumulatedNetProfit)} Ruby
                   <br />
                   Required: {fmt(CONSTANTS.BREAK_EVEN.target)} Ruby
                 </p>
-                <p className="text-xs text-muted mb-4">
+                <p className="text-muted mb-4">
                   The campus revoked your license. Bayu did not pass.
                 </p>
                 <Button

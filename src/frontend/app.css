@@ -8,6 +8,10 @@ body {
   background-color: #f3f2ef;
 }
 
+html {
+  font-size: 17px;
+}
+
 .dark body,
 body.dark {
   background-color: #0f0f0f;

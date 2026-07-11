@@ -53,7 +53,7 @@ export default function StaffPage() {
       {/* Staff info */}
       <Card>
         <CardHeader>
-          <h2 className="text-sm font-bold">Staff</h2>
+          <h2 className="font-bold">Staff</h2>
         </CardHeader>
         <CardContent className="space-y-3">
           {/* Barista */}
@@ -63,8 +63,8 @@ export default function StaffPage() {
                 <Coffee className="size-4 text-amber-500" />
               </div>
               <div>
-                <p className="text-sm font-medium">Barista</p>
-                <p className="text-[10px] text-muted">
+                <p className="font-medium">Barista</p>
+                <p className="text-muted">
                   {fmt(CONSTANTS.STAFF.BARISTA.dailyWage)} Ruby/day +{CONSTANTS.STAFF.BARISTA.capacityBonus} cups
                 </p>
               </div>
@@ -81,8 +81,8 @@ export default function StaffPage() {
                 <ShoppingBag className="size-4 text-emerald-500" />
               </div>
               <div>
-                <p className="text-sm font-medium">Cashier</p>
-                <p className="text-[10px] text-muted">
+                <p className="font-medium">Cashier</p>
+                <p className="text-muted">
                   {fmt(CONSTANTS.STAFF.CASHIER.dailyWage)} Ruby/day +{CONSTANTS.STAFF.CASHIER.capacityBonus} cups
                 </p>
               </div>
@@ -94,7 +94,7 @@ export default function StaffPage() {
 
           <Separator />
 
-          <div className="text-center text-xs text-muted">
+          <div className="text-center text-muted">
             Total capacity: {capacity} cups/day
           </div>
         </CardContent>
@@ -103,7 +103,7 @@ export default function StaffPage() {
       {/* Cashier actions */}
       <Card>
         <CardHeader>
-          <h3 className="text-sm font-bold">Cashier Actions</h3>
+          <h3 className="font-bold">Cashier Actions</h3>
         </CardHeader>
         <CardContent>
           {!state.hasCashier ? (
@@ -128,7 +128,7 @@ export default function StaffPage() {
                 <UserX className="size-4" />
                 Fire Cashier (pay {fmt(severanceCost)} Ruby severance pay)
               </Button>
-              <p className="text-[10px] text-muted text-center">
+              <p className="text-muted text-center">
                 Severance pay = 3x monthly salary ({fmt(severanceCost)} Ruby)
               </p>
             </div>

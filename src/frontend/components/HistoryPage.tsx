@@ -20,10 +20,12 @@ export default function HistoryPage() {
     setIndex(dailyHistory.length - 1)
   }, [dailyHistory.length])
 
+  const [touchStart, setTouchStart] = useState(0)
+
   if (dailyHistory.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-muted p-4">
-        <p className="text-sm">No days recorded yet. Advance a day to start tracking.</p>
+        <p className="">No days recorded yet. Advance a day to start tracking.</p>
       </div>
     )
   }
@@ -49,7 +51,6 @@ export default function HistoryPage() {
   }
 
   // Swipe support
-  const [touchStart, setTouchStart] = useState(0)
   const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX)
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = e.changedTouches[0].clientX - touchStart
@@ -71,12 +72,12 @@ export default function HistoryPage() {
       <Card>
         <CardContent className="grid grid-cols-2 gap-3 text-center py-3">
           <div>
-            <p className="text-[10px] text-muted uppercase tracking-wider">Gross Revenue</p>
-            <p className="text-lg font-bold text-emerald-500">{fmt(state.accumulatedGrossRevenue)}</p>
+            <p className="text-muted uppercase tracking-wider">Gross Revenue</p>
+            <p className="font-bold text-emerald-500">{fmt(state.accumulatedGrossRevenue)}</p>
           </div>
           <div>
-            <p className="text-[10px] text-muted uppercase tracking-wider">Net Profit</p>
-            <p className={`text-lg font-bold ${state.accumulatedNetProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
+            <p className="text-muted uppercase tracking-wider">Net Profit</p>
+            <p className={`font-bold ${state.accumulatedNetProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
               {state.accumulatedNetProfit >= 0 ? '+' : ''}{fmt(state.accumulatedNetProfit)}
             </p>
           </div>
@@ -97,7 +98,7 @@ export default function HistoryPage() {
       {/* Day report */}
       <Card>
         <CardContent className="space-y-2 py-3">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
             <span className="text-muted">Cups Sold</span>
             <span className="text-right font-semibold">{day.cupsSold}</span>
 
@@ -127,7 +128,7 @@ export default function HistoryPage() {
 
           {/* Walkouts */}
           {(day.walkouts.tooExpensive > 0 || day.walkouts.outOfStock > 0 || day.walkouts.queueTooLong > 0) && (
-            <div className="pt-2 border-t border-stone-700/50 text-xs text-muted">
+            <div className="pt-2 border-t border-stone-700/50 text-muted">
               <p>
                 Walkouts: {day.walkouts.tooExpensive} expensive,
                 {day.walkouts.outOfStock} OOS,
@@ -138,7 +139,7 @@ export default function HistoryPage() {
 
           {/* Expired items */}
           {day.expiredIngredients.length > 0 && (
-            <div className="text-xs text-danger">
+            <div className="text-danger">
               Expired: {day.expiredIngredients.join(', ')}
             </div>
           )}
@@ -155,12 +156,12 @@ export default function HistoryPage() {
         Loop: {looping ? 'On' : 'Off'}
       </Button>
 
-      <p className="text-center text-[10px] text-muted">Swipe or use arrows</p>
+      <p className="text-center text-muted">Swipe or use arrows</p>
 
       {/* Break-even status */}
       <Card className={beMet ? 'border border-emerald-700/50' : 'border border-danger/50'}>
         <CardContent className="py-3 text-center">
-          <p className={`text-xs font-bold ${beMet ? 'text-emerald-500' : 'text-danger'}`}>
+          <p className={`font-bold ${beMet ? 'text-emerald-500' : 'text-danger'}`}>
             {beMet
               ? 'Break-even target met. The campus is pleased.'
               : `Break-even: ${fmt(state.accumulatedNetProfit)} / ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby needed. ${Math.max(0, CONSTANTS.BREAK_EVEN.days - state.currentDay + 1)} days remaining.`

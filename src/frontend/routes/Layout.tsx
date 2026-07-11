@@ -23,21 +23,23 @@ function Layout() {
     <>
       {/* ---- Mobile layout ---- */}
       <div className="flex min-h-screen flex-col lg:hidden">
-        <header className="sticky top-4 z-50 mx-3 rounded-full bg-surface shadow-sm px-4 py-2 text-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col leading-tight">
-              <span className="text-muted text-[10px]">Day {state.currentDay}</span>
-              <span className="font-semibold text-emerald-500 text-sm">
+        <header className="sticky top-4 z-50 mx-3">
+          <div className="flex items-center gap-1.5 justify-between">
+            <div className="flex items-center gap-1.5">
+              <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold">
+                Day {state.currentDay}
+              </div>
+              <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold text-emerald-500">
                 {fmt(state.rubyBalance)} Ruby
-              </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {expiring.length > 0 && (
-                <div className="rounded-full bg-danger/20 px-2 py-0.5 text-[10px] text-danger font-medium">
-                  {expiring.length} expiring
+                <div className="rounded-full bg-danger/20 px-2 py-1 text-danger font-medium">
+                  {expiring.length}
                 </div>
               )}
-              <Button variant="secondary" size="sm" onPress={() => setAlmanacOpen(true)}>
+              <Button variant="primary" size="sm" onPress={() => setAlmanacOpen(true)}>
                 <BookOpen className="size-3.5" />
               </Button>
             </div>
@@ -54,7 +56,7 @@ function Layout() {
             className={`flex flex-col items-center gap-0.5 min-w-0 h-auto py-1.5 rounded-lg ${location.pathname === '/' ? 'bg-stone-100 dark:bg-stone-800 text-amber-600 dark:text-amber-400 font-medium' : 'text-muted'}`}
           >
             <BarChart3 className="size-5" />
-            <span className="text-[10px]">Meta</span>
+            <span className="">Meta</span>
           </Button>
           <Button
             variant="ghost"
@@ -63,7 +65,7 @@ function Layout() {
             className={`flex flex-col items-center gap-0.5 min-w-0 h-auto py-1.5 rounded-lg ${location.pathname.startsWith('/resources') ? 'bg-stone-100 dark:bg-stone-800 text-amber-600 dark:text-amber-400 font-medium' : 'text-muted'}`}
           >
             <PackageSearch className="size-5" />
-            <span className="text-[10px]">Resources</span>
+            <span className="">Resources</span>
           </Button>
           <Button
             variant="primary"
@@ -72,18 +74,18 @@ function Layout() {
             className="flex flex-col items-center gap-0.5 min-w-0 h-auto py-1.5 bg-emerald-600"
           >
             <Play className="size-5" />
-            <span className="text-[10px]">Advance</span>
+            <span className="">Advance</span>
           </Button>
         </nav>
       </div>
 
       {/* ---- Desktop / tablet-landscape layout ---- */}
-      <div className="hidden lg:flex min-h-screen">
+      <div className="hidden lg:block min-h-screen pl-[15.5rem]">
         {/* Sidebar */}
-        <nav className="w-56 shrink-0 flex flex-col bg-surface p-3 gap-1.5 m-3 rounded-xl shadow-sm">
+        <nav className="fixed left-3 top-3 bottom-3 z-40 w-56 flex flex-col bg-surface p-3 gap-1.5 rounded-xl shadow-sm">
           <div className="flex items-center gap-2 px-3 py-3 mb-1">
             <Coffee className="size-5 text-amber-500" />
-            <span className="text-sm font-bold">Amatric</span>
+            <span className="font-bold">Amatric</span>
           </div>
           <Button
             variant="ghost"
@@ -91,7 +93,7 @@ function Layout() {
             className={`w-full justify-start gap-3 h-auto py-2.5 ${location.pathname === '/' ? 'bg-stone-100 dark:bg-stone-800 text-amber-600 dark:text-amber-400 font-medium' : 'text-muted'}`}
           >
             <BarChart3 className="size-4 shrink-0" />
-            <span className="text-sm">Meta</span>
+            <span className="">Meta</span>
           </Button>
           <Button
             variant="ghost"
@@ -99,11 +101,11 @@ function Layout() {
             className={`w-full justify-start gap-3 h-auto py-2.5 ${location.pathname.startsWith('/resources') ? 'bg-stone-100 dark:bg-stone-800 text-amber-600 dark:text-amber-400 font-medium' : 'text-muted'}`}
           >
             <PackageSearch className="size-4 shrink-0" />
-            <span className="text-sm">Resources</span>
+            <span className="">Resources</span>
           </Button>
           <div className="flex-1" />
           {expiring.length > 0 && (
-            <div className="mx-2 mb-1 rounded-full bg-danger/20 px-3 py-1 text-[10px] text-danger font-medium text-center">
+            <div className="mx-2 mb-1 rounded-full bg-danger/20 px-3 py-1 text-danger font-medium text-center">
               {expiring.length} expiring tomorrow
             </div>
           )}
@@ -113,31 +115,31 @@ function Layout() {
             className="w-full gap-3 h-auto py-2.5 bg-emerald-600"
           >
             <Play className="size-4 shrink-0" />
-            <span className="text-sm">Advance Day</span>
+            <span className="">Advance Day</span>
           </Button>
         </nav>
 
         {/* Content area */}
-        <div className="flex flex-col flex-1 min-w-0">
-          <header className="sticky top-4 z-50 mx-3 rounded-full bg-surface shadow-sm px-4 py-2 text-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col leading-tight">
-                <span className="text-muted text-[10px]">Day {state.currentDay}</span>
-                <span className="font-semibold text-emerald-500 text-sm">
-                  {fmt(state.rubyBalance)} Ruby
-                </span>
-              </div>
-              {expiring.length > 0 && (
-                <div className="rounded-full bg-danger/20 px-2 py-0.5 text-[10px] text-danger font-medium">
-                  {expiring.length} expiring tomorrow
+        <div className="flex flex-col min-h-screen">
+          <header className="sticky top-4 z-50 mx-3">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Button variant="primary" size="sm" onPress={() => setAlmanacOpen(true)}>
+                  <BookOpen className="size-3.5" />
+                  Almanac
+                </Button>
+                <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold">
+                  Day {state.currentDay}
                 </div>
-              )}
-              <Button variant="secondary" size="sm" onPress={() => setAlmanacOpen(true)}>
-                <BookOpen className="size-3.5" />
-                Almanac
-              </Button>
-            </div>
-          </header>
+                <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold text-emerald-500">
+                  {fmt(state.rubyBalance)} Ruby
+                </div>
+                {expiring.length > 0 && (
+                  <div className="rounded-full bg-danger/20 px-2 py-1 text-danger font-medium">
+                    {expiring.length} expiring tomorrow
+                  </div>
+                )}
+              </div>
+            </header>
           <main className="flex-1 overflow-y-auto py-3">
             <Outlet />
           </main>

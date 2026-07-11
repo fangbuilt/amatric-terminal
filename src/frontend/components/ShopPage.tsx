@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import {
   Card, CardHeader, CardContent, CardFooter,
   Button, TextField, Input, Select, ListBox, toast,
+  Accordion,
 } from '@heroui/react'
-import { ShoppingCart, Plus, Minus, AlertTriangle, Check } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, AlertTriangle, Check, ChevronDown } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
 import { getState, setState, subscribe } from '../../core/state/gameStore'
 import { INGREDIENTS } from '../../core/constants/data'
@@ -19,6 +20,7 @@ export default function ShopPage() {
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
+  const [cartExpanded, setCartExpanded] = useState<Set<string | number>>(new Set())
 
   const unlockedIngredientIds = new Set(state.historicalPurchases)
   const activeIngredientIds = new Set(
@@ -37,10 +39,12 @@ export default function ShopPage() {
     setQuantities(q => ({ ...q, [id]: Math.max(0, Math.min(n, 999)) }))
   }
 
-  const cartTotal = Object.entries(quantities).reduce((sum, [id, qty]) => {
+  const cartEntries = Object.entries(quantities).filter(([, qty]) => qty > 0)
+  const cartTotal = cartEntries.reduce((sum, [id, qty]) => {
     const ingr = INGREDIENTS.find(i => i.id === id)
     return ingr ? sum + ingr.bulkCost * qty : sum
   }, 0)
+  const cartItemCount = cartEntries.length
 
   const canAffordCart = cartTotal <= state.rubyBalance
 
@@ -48,8 +52,7 @@ export default function ShopPage() {
     const next = JSON.parse(JSON.stringify(getState())) as GameState
     const skipped: string[] = []
 
-    for (const [id, qty] of Object.entries(quantities)) {
-      if (qty <= 0) continue
+    for (const [id, qty] of cartEntries) {
       const ingr = INGREDIENTS.find(i => i.id === id)!
       const totalCost = ingr.bulkCost * qty
       if (next.rubyBalance < totalCost) {
@@ -87,6 +90,15 @@ export default function ShopPage() {
       })
     }
 
+    // Success toast for purchased items
+    const purchasedCount = cartEntries.length - skipped.length
+    if (purchasedCount > 0) {
+      toast.success('Purchase complete', {
+        description: `${purchasedCount} item${purchasedCount !== 1 ? 's' : ''} added to inventory.`,
+        indicator: <Check className="size-5 text-emerald-500" />,
+      })
+    }
+
     setState(next)
     setLocalState({ ...next })
     setQuantities({})
@@ -94,8 +106,11 @@ export default function ShopPage() {
 
   const showCart = cartTotal > 0
 
+  const shelfLabel = (shelfLifeDays: number) =>
+    isFinite(shelfLifeDays) ? `${shelfLifeDays}d shelf` : 'Non-perishable'
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 pb-32 lg:pb-28">
       {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-2">
         <TextField
@@ -103,7 +118,7 @@ export default function ShopPage() {
           value={search}
           onChange={setSearch}
         >
-          <Input placeholder="Search ingredients..." />
+          <Input placeholder="Search ingredients..." aria-label="Search ingredients" />
         </TextField>
         <Select
           className="sm:w-40"
@@ -125,29 +140,32 @@ export default function ShopPage() {
       </div>
 
       {/* Ingredient grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {filtered.map(i => {
           const qty = quantities[i.id] ?? 0
           const alreadyBought = unlockedIngredientIds.has(i.id)
           return (
             <Card key={i.id} className="text-center">
                 <div className="flex justify-center pt-2">
-                  <div className="aspect-square w-full max-w-24 rounded-xl bg-stone-200 dark:bg-stone-700" />
+                  <div className="relative w-full max-w-24">
+                    <div className="aspect-square w-full rounded-xl bg-stone-200 dark:bg-stone-700" />
+                    {alreadyBought && (
+                      <div className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-emerald-500 flex items-center justify-center border-2 border-[#f3f2ef] dark:border-[#0f0f0f] shadow-sm">
+                        <Check className="size-3 text-white" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               <CardHeader>
-                <div className="flex items-center justify-center gap-1.5">
-                  <span className="font-medium text-sm truncate">{i.name}</span>
-                  {alreadyBought && (
-                    <span className="text-[10px] text-emerald-500 shrink-0">owned</span>
-                  )}
-                </div>
+                <span className="font-medium truncate block">{i.name}</span>
               </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-xs text-muted">
-                  {fmt(i.bulkCost)} Ruby
+              <CardContent className="pt-0 space-y-1">
+                <p className="text-muted">
+                  {fmt(i.bulkCost)} Ruby / {fmt(i.bulkUnit)} {i.unit}
                 </p>
+                <p className="text-muted">{shelfLabel(i.shelfLifeDays)}</p>
               </CardContent>
-              <CardFooter className="flex flex-col items-center gap-1.5">
+              <CardFooter className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2">
                   <Button
                     variant="secondary"
@@ -158,7 +176,7 @@ export default function ShopPage() {
                   >
                     <Minus className="size-3" />
                   </Button>
-                  <span className="w-6 text-center text-sm font-semibold tabular-nums">{qty}</span>
+                  <span className="w-6 text-center font-semibold tabular-nums">{qty}</span>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -167,55 +185,112 @@ export default function ShopPage() {
                   >
                     <Plus className="size-3" />
                   </Button>
+                  {qty > 0 && (
+                    <span className="text-muted tabular-nums">
+                      {fmt(i.bulkCost * qty)} Ruby
+                    </span>
+                  )}
                 </div>
-                {qty > 0 && (
-                  <span className="text-xs text-muted">
-                    {fmt(i.bulkCost * qty)}
-                  </span>
-                )}
               </CardFooter>
             </Card>
           )
         })}
         {filtered.length === 0 && (
-          <p className="col-span-full text-center text-muted py-8 text-sm">
+          <p className="col-span-full text-center text-muted py-8">
             No ingredients match your filter.
           </p>
         )}
       </div>
 
-      {/* Floating cart island */}
+      {/* Cart island — pill on both mobile & desktop */}
       {showCart && (
         <>
-          {/* Spacer to prevent last card from being hidden behind the island */}
-          <div className="h-20" />
-          <div className="fixed bottom-16 left-0 right-0 z-30 border-t border-stone-700/50 bg-surface px-3 py-3">
-            <div className="flex items-center justify-between max-w-lg mx-auto">
-              <div>
-                <span className="text-xs text-muted">Cart total</span>
-                <p className={`text-lg font-bold ${canAffordCart ? 'text-emerald-500' : 'text-danger'}`}>
+          {/* Mobile */}
+          <div className="fixed lg:hidden bottom-24 left-3 right-3 z-30 rounded-xl bg-surface shadow-sm px-4 py-2 flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="shrink-0">
+                <span className="text-muted">{cartItemCount} item{cartItemCount !== 1 ? 's' : ''}</span>
+                <p className={`font-bold ${canAffordCart ? 'text-emerald-500' : 'text-danger'}`}>
                   {fmt(cartTotal)} Ruby
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onPress={() => setQuantities({})}
-                >
+              <div className="flex items-center gap-1.5">
+                <Button variant="secondary" size="sm" onPress={() => setQuantities({})}>
                   Clear All
                 </Button>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  isDisabled={!canAffordCart}
-                  onPress={buyAll}
-                >
-                  <ShoppingCart className="size-4" />
+                <Button variant="primary" size="sm" isDisabled={!canAffordCart} onPress={buyAll}>
+                  <ShoppingCart className="size-3.5" />
                   Purchase All
                 </Button>
               </div>
             </div>
+            <Accordion expandedKeys={cartExpanded} onExpandedChange={setCartExpanded}>
+              <Accordion.Item id="cart-details">
+                <Accordion.Heading>
+                  <Accordion.Trigger className="flex items-center justify-between w-full text-muted">
+                    Order details
+                    <Accordion.Indicator />
+                  </Accordion.Trigger>
+                </Accordion.Heading>
+                <Accordion.Panel>
+                  <Accordion.Body className="pt-1 space-y-1">
+                    {cartEntries.map(([id, qty]) => {
+                      const ingr = INGREDIENTS.find(i => i.id === id)!
+                      return (
+                        <div key={id} className="flex items-center justify-between text-muted">
+                          <span>{ingr.name}</span>
+                          <span className="tabular-nums">{qty}× {fmt(ingr.bulkCost)} = {fmt(ingr.bulkCost * qty)}</span>
+                        </div>
+                      )
+                    })}
+                  </Accordion.Body>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
+          </div>
+
+          {/* Desktop */}
+          <div className="hidden lg:flex fixed bottom-4 left-[15.5rem] right-3 z-30 rounded-xl bg-surface shadow-sm px-4 py-2 flex-col gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <div className="shrink-0">
+                <span className="text-muted">{cartItemCount} item{cartItemCount !== 1 ? 's' : ''}</span>
+                <p className={`font-bold ${canAffordCart ? 'text-emerald-500' : 'text-danger'}`}>
+                  {fmt(cartTotal)} Ruby
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button variant="secondary" size="sm" onPress={() => setQuantities({})}>
+                  Clear All
+                </Button>
+                <Button variant="primary" size="sm" isDisabled={!canAffordCart} onPress={buyAll}>
+                  <ShoppingCart className="size-3.5" />
+                  Purchase All
+                </Button>
+              </div>
+            </div>
+            <Accordion expandedKeys={cartExpanded} onExpandedChange={setCartExpanded}>
+              <Accordion.Item id="cart-details-desktop">
+                <Accordion.Heading>
+                  <Accordion.Trigger className="flex items-center justify-between w-full text-muted">
+                    Order details
+                    <Accordion.Indicator />
+                  </Accordion.Trigger>
+                </Accordion.Heading>
+                <Accordion.Panel>
+                  <Accordion.Body className="pt-1 space-y-1">
+                    {cartEntries.map(([id, qty]) => {
+                      const ingr = INGREDIENTS.find(i => i.id === id)!
+                      return (
+                        <div key={id} className="flex items-center justify-between text-muted">
+                          <span>{ingr.name}</span>
+                          <span className="tabular-nums">{qty}× {fmt(ingr.bulkCost)} = {fmt(ingr.bulkCost * qty)}</span>
+                        </div>
+                      )
+                    })}
+                  </Accordion.Body>
+                </Accordion.Panel>
+              </Accordion.Item>
+            </Accordion>
           </div>
         </>
       )}

@@ -107,29 +107,29 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
             {phase === 'forecast' && (
               <div className="space-y-3">
                 <Surface variant="secondary" className="px-4 py-3 rounded-xl space-y-2">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between">
                     <span className="text-muted">Customers expected</span>
                     <span className="font-bold text-emerald-500">{CONSTANTS.BASE_DAILY_TRAFFIC}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between">
                     <span className="text-muted">Staff capacity</span>
                     <span className="font-bold">{capacity} cups/day</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between">
                     <span className="text-muted">Active menus</span>
                     <span className="font-bold">{activeCount}</span>
                   </div>
                 </Surface>
 
                 {!breakEvenMet && (
-                  <p className="text-xs text-muted text-center">
+                  <p className="text-muted text-center">
                     Break-even needed: {fmt(CONSTANTS.BREAK_EVEN.target)} Ruby accumulated net profit within {CONSTANTS.BREAK_EVEN.days} days.
                     The campus is watching.
                   </p>
                 )}
 
                 {activeCount === 0 && (
-                  <p className="text-xs text-warning text-center">
+                  <p className="text-warning text-center">
                     No active menus. Enable some in the Almanac first.
                   </p>
                 )}
@@ -140,8 +140,8 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
               <div className="space-y-3">
                 {/* Sales */}
                 <Surface variant="secondary" className="px-4 py-2.5 rounded-xl">
-                  <h3 className="text-xs font-bold text-emerald-500 mb-1.5">Sales</h3>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                  <h3 className="font-bold text-emerald-500 mb-1.5">Sales</h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     <span className="text-muted">Served</span>
                     <span className="text-right font-semibold">{report.cupsSold} / {CONSTANTS.BASE_DAILY_TRAFFIC}</span>
                     <span className="text-muted">Revenue</span>
@@ -153,8 +153,8 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
 
                 {/* Expenses */}
                 <Surface variant="secondary" className="px-4 py-2.5 rounded-xl">
-                  <h3 className="text-xs font-bold text-danger mb-1.5">Expenses</h3>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                  <h3 className="font-bold text-danger mb-1.5">Expenses</h3>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     <span className="text-muted">Staff (opex)</span>
                     <span className="text-right font-semibold text-danger">-{fmt(report.opex)}</span>
                     {report.spoilageLoss > 0 && (
@@ -169,8 +169,8 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                 {/* Net Profit */}
                 <Card>
                   <CardContent className="flex items-center justify-between py-2.5">
-                    <span className="text-sm font-bold">Net Profit</span>
-                    <span className={`text-lg font-bold ${report.netProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
+                    <span className="font-bold">Net Profit</span>
+                    <span className={`font-bold ${report.netProfit >= 0 ? 'text-emerald-500' : 'text-danger'}`}>
                       {report.netProfit >= 0 ? '+' : ''}{fmt(report.netProfit)}
                     </span>
                   </CardContent>
@@ -179,19 +179,19 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                 {/* Walkouts */}
                 {(report.walkouts.tooExpensive > 0 || report.walkouts.outOfStock > 0 || report.walkouts.queueTooLong > 0) && (
                   <Surface variant="secondary" className="px-4 py-2.5 rounded-xl">
-                    <h3 className="text-xs font-bold text-warning mb-1.5">Walkouts</h3>
-                    <div className="grid grid-cols-3 gap-2 text-xs text-center">
+                    <h3 className="font-bold text-warning mb-1.5">Walkouts</h3>
+                    <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
                         <p className="text-warning font-bold">{report.walkouts.tooExpensive}</p>
-                        <p className="text-muted text-[10px]">Too expensive</p>
+                        <p className="text-muted">Too expensive</p>
                       </div>
                       <div>
                         <p className="text-warning font-bold">{report.walkouts.outOfStock}</p>
-                        <p className="text-muted text-[10px]">Out of stock</p>
+                        <p className="text-muted">Out of stock</p>
                       </div>
                       <div>
                         <p className="text-warning font-bold">{report.walkouts.queueTooLong}</p>
-                        <p className="text-muted text-[10px]">Queue too long</p>
+                        <p className="text-muted">Queue too long</p>
                       </div>
                     </div>
                   </Surface>
@@ -199,18 +199,18 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
 
                 {/* Out of stock / expired */}
                 {report.outOfStockItems.length > 0 && (
-                  <Surface variant="tertiary" className="px-4 py-2 text-xs text-danger rounded-xl">
+                  <Surface variant="tertiary" className="px-4 py-2 text-danger rounded-xl">
                     Ran out: {report.outOfStockItems.join(', ')}
                   </Surface>
                 )}
                 {report.expiredIngredients.length > 0 && (
-                  <Surface variant="tertiary" className="px-4 py-2 text-xs text-danger rounded-xl">
+                  <Surface variant="tertiary" className="px-4 py-2 text-danger rounded-xl">
                     Expired: {report.expiredIngredients.join(', ')}
                   </Surface>
                 )}
 
                 {/* Advice */}
-                <p className="text-xs text-center text-muted pt-1">
+                <p className="text-center text-muted pt-1">
                   {report.netProfit > 0
                     ? 'Profitable day. Keep it up, Bayu.'
                     : report.netProfit < 0
@@ -221,7 +221,7 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                 {/* Break-even check */}
                 {state.currentDay >= CONSTANTS.BREAK_EVEN.days && (
                   <Surface variant="tertiary" className={`px-4 py-2.5 text-center rounded-xl border ${breakEvenMet ? 'border-emerald-700/50' : 'border-danger/50'}`}>
-                    <p className={`text-xs font-bold ${breakEvenMet ? 'text-emerald-500' : 'text-danger'}`}>
+                    <p className={`font-bold ${breakEvenMet ? 'text-emerald-500' : 'text-danger'}`}>
                       {breakEvenMet
                         ? 'Break-even target met'
                         : `Break-even: ${fmt(state.accumulatedNetProfit)} / ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby required. The campus is not pleased.`
@@ -249,7 +249,7 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
               </div>
             ) : (
               <Button variant="primary" className="w-full" onPress={reset}>
-                Sleep & Wake Up (Day {state.currentDay + 1})
+                Sleep & Wake Up (Day {state.currentDay})
               </Button>
             )}
           </ModalFooter>
