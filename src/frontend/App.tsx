@@ -43,7 +43,7 @@ export default function App() {
 
   return (
     <>
-      <ToastProvider placement="bottom end" />
+      <ToastProvider placement="top end" className="toast-container z-[9999]" />
 
       {showIntro && <IntroOverlay onFinish={() => setShowIntro(false)} />}
 

@@ -2,9 +2,12 @@ import type { GameState } from '../core/types/gameState'
 import { MENU } from '../core/constants/data'
 import { INGREDIENT } from '../core/constants/lookup'
 
-/** Format a number as currency (Ruby). */
+/** Format a number as currency (Ruby). Whole numbers show without decimals. */
 export const fmt = (n: number) =>
-  n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  n.toLocaleString('en-US', {
+    minimumFractionDigits: Number.isInteger(n) ? 0 : 1,
+    maximumFractionDigits: 2,
+  })
 
 /** Look up an ingredient definition by ID. */
 export const getIngredient = (id: string) => INGREDIENT.get(id)!

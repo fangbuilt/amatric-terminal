@@ -15,11 +15,13 @@
   "dependencies": {
     "@heroui/react": "^3.0.0-beta",
     "@heroui/styles": "^3.0.0-beta",
+    "babel-plugin-react-compiler": "^1.0.0",
     "chalk": "^5.6.2",
     "inquirer": "^14.0.2",
     "lodash-es": "^4.18.1",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
+    "react-compiler-runtime": "^1.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.18.1",
     "zustand": "^5.0.14"

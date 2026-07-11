@@ -92,6 +92,8 @@ export default function ShopPage() {
     setQuantities({})
   }
 
+  const showCart = cartTotal > 0
+
   return (
     <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4">
       {/* Search + filter */}
@@ -123,17 +125,17 @@ export default function ShopPage() {
       </div>
 
       {/* Ingredient grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {filtered.map(i => {
           const qty = quantities[i.id] ?? 0
           const alreadyBought = unlockedIngredientIds.has(i.id)
           return (
-            <Card key={i.id}>
-                <div className="flex justify-center pt-4">
+            <Card key={i.id} className="text-center">
+                <div className="flex justify-center pt-2">
                   <div className="aspect-square w-full max-w-24 rounded-xl bg-stone-200 dark:bg-stone-700" />
                 </div>
               <CardHeader>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-center gap-1.5 w-full">
                   <span className="font-medium text-sm truncate">{i.name}</span>
                   {alreadyBought && (
                     <span className="text-[10px] text-emerald-500 shrink-0">owned</span>
@@ -142,11 +144,11 @@ export default function ShopPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <p className="text-xs text-muted">
-                  {fmt(i.bulkCost)} Ruby each ({fmt(i.bulkCost / i.bulkUnit)}/unit)
+                  {fmt(i.bulkCost)} Ruby
                 </p>
               </CardContent>
-              <CardFooter className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+              <CardFooter className="flex items-center justify-center gap-3">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -182,36 +184,40 @@ export default function ShopPage() {
         )}
       </div>
 
-      {/* Sticky cart footer */}
-      {cartTotal > 0 && (
-        <div className="sticky bottom-0 z-30 -mx-3 -mb-3 mt-auto border-t border-stone-700/50 bg-surface px-3 py-3 sm:-mx-4 sm:-mb-3">
-          <div className="flex items-center justify-between max-w-lg mx-auto">
-            <div>
-              <span className="text-xs text-muted">Cart total</span>
-              <p className={`text-lg font-bold ${canAffordCart ? 'text-emerald-500' : 'text-danger'}`}>
-                {fmt(cartTotal)} Ruby
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="lg"
-                onPress={() => setQuantities({})}
-              >
-                Clear All
-              </Button>
-              <Button
-                variant="primary"
-                size="lg"
-                isDisabled={!canAffordCart}
-                onPress={buyAll}
-              >
-                <ShoppingCart className="size-4" />
-                Purchase All
-              </Button>
+      {/* Floating cart island */}
+      {showCart && (
+        <>
+          {/* Spacer to prevent last card from being hidden behind the island */}
+          <div className="h-20" />
+          <div className="fixed bottom-16 left-0 right-0 z-30 border-t border-stone-700/50 bg-surface px-3 py-3">
+            <div className="flex items-center justify-between max-w-lg mx-auto">
+              <div>
+                <span className="text-xs text-muted">Cart total</span>
+                <p className={`text-lg font-bold ${canAffordCart ? 'text-emerald-500' : 'text-danger'}`}>
+                  {fmt(cartTotal)} Ruby
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onPress={() => setQuantities({})}
+                >
+                  Clear All
+                </Button>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  isDisabled={!canAffordCart}
+                  onPress={buyAll}
+                >
+                  <ShoppingCart className="size-4" />
+                  Purchase All
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   )

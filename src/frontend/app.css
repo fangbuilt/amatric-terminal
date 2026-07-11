@@ -5,6 +5,17 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f3f2ef;
+}
+
+.dark body,
+body.dark {
+  background-color: #0f0f0f;
+}
+
+/* Ensure toasts always sit above modals and overlays */
+.toast-container {
+  z-index: 9999;
 }
 
 /* Custom slide-up animation */

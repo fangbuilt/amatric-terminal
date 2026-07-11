@@ -27,8 +27,8 @@ export default function MetaPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4 max-w-lg mx-auto">
-      {/* Stats card */}
+    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4 mx-auto max-w-screen-lg">
+      {/* Stats card - full width */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-1.5">
@@ -88,6 +88,9 @@ export default function MetaPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Side cards grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
       {/* Bayu's Mission (replay intro) */}
       <Card>
@@ -174,6 +177,7 @@ export default function MetaPage() {
           </p>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

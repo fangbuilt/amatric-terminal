@@ -16,8 +16,8 @@ type Tab = (typeof tabs)[number]['id']
 
 export default function ResourcesPage() {
   return (
-    <Tabs className="w-full" defaultSelectedKey="shop">
-      <Tabs.ListContainer>
+    <Tabs className="w-full mt-2 px-3" defaultSelectedKey="shop">
+      <Tabs.ListContainer className='bg-stone-200 dark:bg-stone-700'>
         <Tabs.List aria-label="Resources">
           {tabs.map(tab => {
             const Icon = tab.icon

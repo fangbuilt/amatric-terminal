@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   Card, CardHeader, CardContent, CardFooter, Button, Chip, Separator, toast,
 } from '@heroui/react'
-import { Coffee, ShoppingBag, RotateCcw, UserPlus, UserX, Check, AlertTriangle, Info } from 'lucide-react'
+import { Coffee, ShoppingBag, UserPlus, UserX, Check, AlertTriangle, Info } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
 import { getState, setState, subscribe } from '../../core/state/gameStore'
 import { CONSTANTS } from '../../core/constants/data'
@@ -48,13 +48,8 @@ export default function StaffPage() {
     })
   }
 
-  const replayIntro = () => {
-    localStorage.removeItem('amatric_intro_shown')
-    window.location.reload()
-  }
-
   return (
-    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4">
+    <div className="flex flex-col gap-3 p-3 pb-24 sm:p-4 max-w-lg mx-auto">
       {/* Staff info */}
       <Card>
         <CardHeader>
@@ -141,23 +136,7 @@ export default function StaffPage() {
         </CardContent>
       </Card>
 
-      {/* Replay Intro */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-sm font-bold">Game Info</h3>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="secondary"
-            size="lg"
-            className="w-full"
-            onPress={replayIntro}
-          >
-            <RotateCcw className="size-4" />
-            Show Intro Again
-          </Button>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }
