@@ -9,7 +9,7 @@ export function displayHeader() {
   console.log(chalk.bgHex('#D97706').black.bold(` ☕ AMATRIC: JAKARTA CAMPUS COFFEE `))
   console.log(
     chalk.bold(
-      `Day: ${state.currentDay} | Balance: ${chalk.hex('#10B981')(fmt(state.rubyBalance))} Ruby`,
+      `Day: ${state.businessDay} | Balance: ${chalk.hex('#10B981')(fmt(state.rubyBalance))} Ruby`
     ),
   )
   console.log(
@@ -18,7 +18,7 @@ export function displayHeader() {
   )
 
   // Break-even progress
-  const daysRemaining = Math.max(0, CONSTANTS.BREAK_EVEN.days - state.currentDay + 1)
+  const daysRemaining = Math.max(0, CONSTANTS.BREAK_EVEN.days - state.businessDay + 1)
   const progress = Math.min(100, (state.accumulatedNetProfit / CONSTANTS.BREAK_EVEN.target) * 100)
   const progressBar = progress >= 100
     ? chalk.green('✓ TARGET MET')

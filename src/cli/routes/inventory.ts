@@ -23,7 +23,7 @@ export async function inventoryRoute() {
       const total = sumBy(batches, 'qty')
       console.log(chalk.bold(ingredient.name) + ` — Total: ${chalk.yellow(fmt(total))} ${ingredient.unit}`)
       batches.forEach((batch, i) => {
-        const age = state.currentDay - batch.dayBought
+        const age = state.businessDay - batch.dayBought
         const expirationLabel = !isFinite(ingredient.shelfLifeDays)
           ? chalk.dim('Non-perishable')
           : ingredient.shelfLifeDays - age > 0

@@ -4,7 +4,7 @@ import {
   ModalHeader, ModalHeading, ModalBody, ModalFooter,
   Button, Card, CardContent, Surface,
 } from '@heroui/react'
-import { AlertTriangle, Check, Info } from 'lucide-react'
+import { AlertTriangle, Check, Info, Trophy } from 'lucide-react'
 import { toast } from '@heroui/react'
 import type { GameState, DailyReport } from '../../core/types'
 import { getState, setState, subscribe } from '../../core/state/gameStore'
@@ -23,10 +23,12 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
 
   const [report, setReport] = useState<DailyReport | null>(null)
   const [phase, setPhase] = useState<'forecast' | 'result'>('forecast')
+  const [confirmPrestige, setConfirmPrestige] = useState(false)
 
   const reset = () => {
     setReport(null)
     setPhase('forecast')
+    setConfirmPrestige(false)
     onClose()
   }
 
@@ -93,6 +95,33 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
   const activeCount = state.activeMenus.filter(m => m.isActive).length
   const breakEvenMet = state.accumulatedNetProfit >= CONSTANTS.BREAK_EVEN.target
 
+  const handlePrestige = () => {
+    const prev = getState()
+    const next: GameState = JSON.parse(JSON.stringify(prev))
+    next.prestigeHistory = [...next.prestigeHistory, {
+      tier: next.prestigeTier,
+      businessDay: next.businessDay,
+      accumulatedNetProfit: next.accumulatedNetProfit,
+    }]
+    next.prestigeTier += 1
+    next.businessDay = 1
+    next.totalDaysElapsed = 1
+    next.rubyBalance = CONSTANTS.STARTING_CAPITAL + CONSTANTS.PRESTIGE_CAPITAL_BONUS * next.prestigeTier
+    next.inventory = []
+    next.accumulatedGrossRevenue = 0
+    next.accumulatedNetProfit = 0
+    next.dailyHistory = []
+    next.isBankrupt = false
+    setState(next)
+    setLocalState({ ...next })
+    setConfirmPrestige(false)
+    reset()
+  }
+
+  const prestigeMultiplier = 1 + state.prestigeTier * CONSTANTS.PRESTIGE_TRAFFIC_BONUS
+  const minTraffic = Math.round(CONSTANTS.BASE_DAILY_TRAFFIC * prestigeMultiplier * (1 - CONSTANTS.TRAFFIC_VARIANCE))
+  const maxTraffic = Math.round(CONSTANTS.BASE_DAILY_TRAFFIC * prestigeMultiplier * (1 + CONSTANTS.TRAFFIC_VARIANCE + CONSTANTS.BUSY_DAY_BONUS))
+
   return (
     <ModalBackdrop isOpen={isOpen} onOpenChange={(open) => !open && reset()}>
       <ModalContainer>
@@ -109,7 +138,7 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                 <Surface variant="secondary" className="px-4 py-3 rounded-xl space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-muted">Customers expected</span>
-                    <span className="font-bold text-emerald-500">{CONSTANTS.BASE_DAILY_TRAFFIC}</span>
+                    <span className="font-bold text-emerald-500">{minTraffic}-{maxTraffic}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted">Staff capacity</span>
@@ -142,8 +171,15 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                 <Surface variant="secondary" className="px-4 py-2.5 rounded-xl">
                   <h3 className="font-bold text-emerald-500 mb-1.5">Sales</h3>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    <span className="text-muted">Traffic</span>
+                    <span className="text-right font-semibold">
+                      {report.dailyTraffic} customers
+                      {report.isBusyDay && (
+                        <span className="ml-1.5 inline-block rounded-full bg-amber-500/20 px-1.5 py-0.5 font-medium text-amber-500">Busy Day!</span>
+                      )}
+                    </span>
                     <span className="text-muted">Served</span>
-                    <span className="text-right font-semibold">{report.cupsSold} / {CONSTANTS.BASE_DAILY_TRAFFIC}</span>
+                    <span className="text-right font-semibold">{report.cupsSold} / {report.dailyTraffic}</span>
                     <span className="text-muted">Revenue</span>
                     <span className="text-right font-semibold text-emerald-500">+{fmt(report.grossRevenue)}</span>
                     <span className="text-muted">COGS</span>
@@ -219,7 +255,7 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                 </p>
 
                 {/* Break-even check */}
-                {state.currentDay >= CONSTANTS.BREAK_EVEN.days && (
+                {state.businessDay >= CONSTANTS.BREAK_EVEN.days && (
                   <Surface variant="tertiary" className={`px-4 py-2.5 text-center rounded-xl border ${breakEvenMet ? 'border-emerald-700/50' : 'border-danger/50'}`}>
                     <p className={`font-bold ${breakEvenMet ? 'text-emerald-500' : 'text-danger'}`}>
                       {breakEvenMet
@@ -227,6 +263,40 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
                         : `Break-even: ${fmt(state.accumulatedNetProfit)} / ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby required. The campus is not pleased.`
                       }
                     </p>
+                  </Surface>
+                )}
+
+                {/* Break-even reached → prestige section */}
+                {breakEvenMet && (
+                  <Surface variant="tertiary" className="px-4 py-3 text-center rounded-xl border border-emerald-700/50">
+                    {!confirmPrestige ? (
+                      <div className="space-y-2">
+                        <p className="font-bold text-emerald-500">🎉 Break-even reached!</p>
+                        {state.stats.fastestBreakEven != null && state.businessDay === state.stats.fastestBreakEven && (
+                          <p className="text-muted">Break-even reached on Day {state.stats.fastestBreakEven}!</p>
+                        )}
+                        <Button variant="primary" size="sm" onPress={() => setConfirmPrestige(true)}>
+                          <Trophy className="size-4" />
+                          Expand Stall (Prestige)
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="font-bold text-warning">Confirm Prestige?</p>
+                        <p className="text-muted">
+                          This will reset your Day count, balance, and inventory,
+                          but you'll keep your unlocked menus, staff, stats, and gain a permanent traffic bonus.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button variant="secondary" size="sm" className="flex-1" onPress={() => setConfirmPrestige(false)}>
+                            Cancel
+                          </Button>
+                          <Button variant="primary" size="sm" className="flex-1" onPress={handlePrestige}>
+                            Confirm
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </Surface>
                 )}
               </div>
@@ -249,7 +319,7 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
               </div>
             ) : (
               <Button variant="primary" className="w-full" onPress={reset}>
-                Sleep & Wake Up (Day {state.currentDay})
+                Sleep & Wake Up (Day {state.businessDay})
               </Button>
             )}
           </ModalFooter>

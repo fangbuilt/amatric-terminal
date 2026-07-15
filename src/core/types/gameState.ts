@@ -9,12 +9,31 @@ export interface PlayerMenuSetting {
   menuId: string
   isActive: boolean
   sellPrice: number
+  popularityBoostEnd: number
+}
+
+export interface GameStats {
+  highestDailyProfit: number
+  highestDailyRevenue: number
+  totalCupsSold: number
+  fastestBreakEven: number | null
+}
+
+export interface PrestigeRecord {
+  tier: number
+  businessDay: number
+  accumulatedNetProfit: number
 }
 
 import type { DailyReport } from './dailyReport'
 
 export interface GameState {
-  currentDay: number
+  businessDay: number
+  totalDaysElapsed: number
+  dataVersion: number
+  prestigeTier: number
+  prestigeHistory: PrestigeRecord[]
+  stats: GameStats
   rubyBalance: number
   inventory: InventoryBatch[]
   historicalPurchases: string[]

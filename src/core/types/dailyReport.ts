@@ -5,6 +5,8 @@ export interface DailyReport {
   spoilageLoss: number
   netProfit: number
   cupsSold: number
+  dailyTraffic: number
+  isBusyDay: boolean
   walkouts: {
     tooExpensive: number
     outOfStock: number

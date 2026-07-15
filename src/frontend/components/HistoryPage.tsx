@@ -99,6 +99,14 @@ export default function HistoryPage() {
       <Card>
         <CardContent className="space-y-2 py-3">
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+            <span className="text-muted">Traffic</span>
+            <span className="text-right font-semibold">
+              {day.dailyTraffic} customers
+              {day.isBusyDay && (
+                <span className="ml-1.5 inline-block rounded-full bg-amber-500/20 px-1.5 py-0.5 font-medium text-amber-500">Busy Day!</span>
+              )}
+            </span>
+
             <span className="text-muted">Cups Sold</span>
             <span className="text-right font-semibold">{day.cupsSold}</span>
 
@@ -164,7 +172,7 @@ export default function HistoryPage() {
           <p className={`font-bold ${beMet ? 'text-emerald-500' : 'text-danger'}`}>
             {beMet
               ? 'Break-even target met. The campus is pleased.'
-              : `Break-even: ${fmt(state.accumulatedNetProfit)} / ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby needed. ${Math.max(0, CONSTANTS.BREAK_EVEN.days - state.currentDay + 1)} days remaining.`
+              : `Break-even: ${fmt(state.accumulatedNetProfit)} / ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby needed. ${Math.max(0, CONSTANTS.BREAK_EVEN.days - state.businessDay + 1)} days remaining.`
             }
           </p>
         </CardContent>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import {
   Card, CardHeader, CardContent, CardFooter, Button, Chip, Separator, toast,
+  ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger,
+  ModalHeader, ModalHeading, ModalBody,
 } from '@heroui/react'
 import { Coffee, ShoppingBag, UserPlus, UserX, Check, AlertTriangle, Info } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
@@ -11,6 +13,7 @@ import { fmt } from '../utils'
 export default function StaffPage() {
   const [state, setLocalState] = useState<GameState>(getState())
   useEffect(() => subscribe(s => setLocalState({ ...s })), [])
+  const [severanceModalOpen, setSeveranceModalOpen] = useState(false)
 
   const capacity =
     (state.hasBarista ? CONSTANTS.STAFF.BARISTA.capacityBonus : 0) +
@@ -117,26 +120,45 @@ export default function StaffPage() {
               Hire Cashier ({fmt(CONSTANTS.STAFF.CASHIER.dailyWage)} Ruby/day)
             </Button>
           ) : (
-            <div className="space-y-2">
+            <div className="flex items-center gap-2">
               <Button
                 variant="danger"
                 size="lg"
-                className="w-full"
+                className="flex-1"
                 isDisabled={state.rubyBalance < severanceCost}
                 onPress={fireCashier}
               >
                 <UserX className="size-4" />
-                Fire Cashier (pay {fmt(severanceCost)} Ruby severance pay)
+                Fire Cashier
               </Button>
-              <p className="text-muted text-center">
-                Severance pay = 3x monthly salary ({fmt(severanceCost)} Ruby)
-              </p>
+              <Button
+                variant="secondary"
+                size="lg"
+                isIconOnly
+                onPress={() => setSeveranceModalOpen(true)}
+              >
+                <Info className="size-4" />
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-
+      {/* Severance info modal */}
+      <ModalBackdrop isOpen={severanceModalOpen} onOpenChange={(open) => !open && setSeveranceModalOpen(false)}>
+        <ModalContainer>
+          <ModalDialog className="max-w-sm">
+            <ModalCloseTrigger />
+            <ModalHeader>
+              <ModalHeading>Severance Pay</ModalHeading>
+            </ModalHeader>
+            <ModalBody>
+              <p>Severance pay = 3x monthly salary ({fmt(severanceCost)} Ruby).</p>
+              <p className="text-muted">The cashier will be released immediately and the daily wage will stop being deducted.</p>
+            </ModalBody>
+          </ModalDialog>
+        </ModalContainer>
+      </ModalBackdrop>
     </div>
   )
 }

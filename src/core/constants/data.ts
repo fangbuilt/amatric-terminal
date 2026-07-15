@@ -1,63 +1,33 @@
-import type { DrinkMenu, Ingredient } from '../types/ingredient'
+import type { Ingredient, DrinkMenu } from '../types/ingredient'
+import rawData from './gameData.json'
 
-export const INGREDIENTS: Ingredient[] = [
-  { id: 'coffee_beans', name: 'House Blend Beans (1kg)', bulkCost: 120, bulkUnit: 1000, unit: 'g', shelfLifeDays: Infinity },
-  { id: 'fresh_milk', name: 'Fresh Milk (1L)', bulkCost: 20, bulkUnit: 1000, unit: 'ml', shelfLifeDays: 4 },
-  { id: 'palm_sugar', name: 'Palm Sugar Syrup (500ml)', bulkCost: 25, bulkUnit: 500, unit: 'ml', shelfLifeDays: 30 },
-  { id: 'matcha_powder', name: 'Matcha Powder (500g)', bulkCost: 150, bulkUnit: 500, unit: 'g', shelfLifeDays: 60 },
-  { id: 'simple_syrup', name: 'Simple Syrup (1L)', bulkCost: 15, bulkUnit: 1000, unit: 'ml', shelfLifeDays: 90 },
-  { id: 'water', name: 'Mineral Water (19L Gallon)', bulkCost: 25, bulkUnit: 19000, unit: 'ml', shelfLifeDays: Infinity },
-  { id: 'ice_cubes', name: 'Crystal Ice (5kg)', bulkCost: 15, bulkUnit: 5000, unit: 'g', shelfLifeDays: Infinity },
-  { id: 'cup_400ml', name: '400ml Cups (100 pcs)', bulkCost: 50, bulkUnit: 100, unit: 'pcs', shelfLifeDays: Infinity },
-]
+const raw = rawData as typeof rawData & {
+  ingredients: (typeof rawData.ingredients[0] & { shelfLifeDays: number | null })[]
+}
 
-export const MENU: DrinkMenu[] = [
-  {
-    id: 'iced_brown_sugar_latte',
-    name: 'Iced Brown Sugar Latte',
-    basePopularity: 80,
-    recipe: [
-      { ingredientId: 'coffee_beans', qtyNeeded: 15 },
-      { ingredientId: 'fresh_milk', qtyNeeded: 120 },
-      { ingredientId: 'palm_sugar', qtyNeeded: 25 },
-      { ingredientId: 'ice_cubes', qtyNeeded: 150 },
-      { ingredientId: 'cup_400ml', qtyNeeded: 1 },
-    ],
-  },
-  {
-    id: 'iced_matcha_latte',
-    name: 'Iced Matcha Latte',
-    basePopularity: 50,
-    recipe: [
-      { ingredientId: 'matcha_powder', qtyNeeded: 10 },
-      { ingredientId: 'fresh_milk', qtyNeeded: 120 },
-      { ingredientId: 'simple_syrup', qtyNeeded: 15 },
-      { ingredientId: 'water', qtyNeeded: 30 },
-      { ingredientId: 'ice_cubes', qtyNeeded: 150 },
-      { ingredientId: 'cup_400ml', qtyNeeded: 1 },
-    ],
-  },
-  {
-    id: 'iced_americano',
-    name: 'Iced Americano',
-    basePopularity: 30,
-    recipe: [
-      { ingredientId: 'coffee_beans', qtyNeeded: 15 },
-      { ingredientId: 'water', qtyNeeded: 150 },
-      { ingredientId: 'ice_cubes', qtyNeeded: 150 },
-      { ingredientId: 'cup_400ml', qtyNeeded: 1 },
-    ],
-  },
-]
+export const INGREDIENTS: Ingredient[] = raw.ingredients.map(i => ({
+  ...i,
+  unit: i.unit as Ingredient['unit'],
+  shelfLifeDays: i.shelfLifeDays ?? Infinity,
+}))
+
+export const MENU: DrinkMenu[] = raw.menu.map(m => ({
+  ...m,
+  unlockOrder: m.unlockOrder ?? 0,
+}))
+
+export const DATA_VERSION = rawData.version
+export const PATCH_NOTES = rawData.patchNotes
 
 export const CONSTANTS = {
-  STARTING_CAPITAL: 5000,
-  BASE_DAILY_TRAFFIC: 100,
-  BREAK_EVEN: { target: 5000, days: 30 },
-  STAFF: {
-    BARISTA: { dailyWage: 100, capacityBonus: 100 },
-    CASHIER: { dailyWage: 70, capacityBonus: 60 },
-  },
-  /** Pesangon multiplier: months × 30 days × daily wage */
-  SEVERANCE_MULTIPLIER: 3,
+  STARTING_CAPITAL: rawData.constants.STARTING_CAPITAL,
+  BASE_DAILY_TRAFFIC: rawData.constants.BASE_DAILY_TRAFFIC,
+  TRAFFIC_VARIANCE: rawData.constants.TRAFFIC_VARIANCE,
+  BUSY_DAY_CHANCE: rawData.constants.BUSY_DAY_CHANCE,
+  BUSY_DAY_BONUS: rawData.constants.BUSY_DAY_BONUS,
+  PRESTIGE_TRAFFIC_BONUS: rawData.constants.PRESTIGE_TRAFFIC_BONUS,
+  PRESTIGE_CAPITAL_BONUS: rawData.constants.PRESTIGE_CAPITAL_BONUS,
+  BREAK_EVEN: rawData.constants.BREAK_EVEN,
+  STAFF: rawData.constants.STAFF,
+  SEVERANCE_MULTIPLIER: rawData.constants.SEVERANCE_MULTIPLIER,
 }

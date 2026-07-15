@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
   DrawerBackdrop, DrawerContent, DrawerDialog, DrawerHandle,
   DrawerCloseTrigger, DrawerHeader, DrawerHeading, DrawerBody,
-  Button, Chip, Table, Card, CardHeader, CardContent, TextField, Input,
+  Button, Chip, Table, Card, CardHeader, CardContent, Slider,
   Tabs,
   ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger,
   ModalHeader, ModalHeading, ModalBody,
@@ -26,7 +26,7 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
   const [recipeMenuId, setRecipeMenuId] = useState<string | null>(null)
   const [recipeTab, setRecipeTab] = useState<string | number>('recipe')
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editPrice, setEditPrice] = useState('')
+  const [editMargin, setEditMargin] = useState(0)
 
   const unlockedMenus = MENU.filter(m => state.unlockedMenuIds.includes(m.id))
   const lockedMenus = MENU.filter(m => !state.unlockedMenuIds.includes(m.id))
@@ -38,17 +38,21 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
     setRecipeMenuId(id)
     setRecipeTab('recipe')
     setEditingId(null)
-    setEditPrice('')
+    setEditMargin(0)
   }
 
-  const startEdit = (id: string, currentPrice: number) => {
+  const startEdit = (id: string, currentPrice: number, cogm: number) => {
     setEditingId(id)
-    setEditPrice(String(currentPrice))
+    const margin = cogm > 0 ? ((currentPrice / cogm) - 1) * 100 : 0
+    setEditMargin(Math.round(Math.min(250, Math.max(0, margin))))
   }
 
   const saveEdit = (menuId: string) => {
-    const price = parseFloat(editPrice)
-    if (isNaN(price) || price <= 0) return
+    const menu = MENU.find(m => m.id === menuId)
+    if (!menu) return
+    const cogm = calculateCOGM(menu)
+    const price = Math.round(cogm * (1 + editMargin / 100) * 100) / 100
+    if (price <= 0) return
     const next = JSON.parse(JSON.stringify(getState())) as GameState
     const idx = next.activeMenus.findIndex(m => m.menuId === menuId)
     if (idx >= 0) {
@@ -61,7 +65,7 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
 
   const cancelEdit = () => {
     setEditingId(null)
-    setEditPrice('')
+    setEditMargin(0)
   }
 
   const toggleActive = (menuId: string) => {
@@ -136,10 +140,10 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
       {/* Recipe & Pricing Modal */}
       <ModalBackdrop isOpen={!!recipeMenuId} onOpenChange={(open) => {
         if (!open) {
-          setRecipeMenuId(null)
-          setEditingId(null)
-          setEditPrice('')
-        }
+            setRecipeMenuId(null)
+            setEditingId(null)
+            setEditMargin(0)
+          }
       }}>
         <ModalContainer>
           <ModalDialog className="h-[70vh] flex flex-col">
@@ -197,29 +201,29 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
                             </div>
                             <div className="text-right">
                               <p className="text-muted">Sell price</p>
-                              {isEditing ? (
-                                <TextField value={editPrice} onChange={setEditPrice}>
-                                  <Input
-                                    type="number"
-                                    min={0}
-                                    step={0.01}
-                                    className="w-28"
-                                    autoFocus
-                                    aria-label="Edit sell price"
-                                  />
-                                </TextField>
-                              ) : (
-                                <p className="font-bold text-amber-500">{fmt(recipeSetting.sellPrice)} Ruby</p>
-                              )}
-                              <p className="text-muted">
-                                {((recipeSetting.sellPrice - cogm) / cogm * 100).toFixed(0)}% margin
-                              </p>
+                              <p className="font-bold text-amber-500">{fmt(recipeSetting.sellPrice)} Ruby</p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            {isEditing ? (
-                              <>
+                          {isEditing ? (
+                            <div className="space-y-3">
+                              <Slider
+                                value={editMargin}
+                                onChange={(v) => setEditMargin(Number(v))}
+                                minValue={0}
+                                maxValue={250}
+                                step={1}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-muted">Margin</span>
+                                  <span className="font-semibold">{editMargin}% — Sell: {fmt(cogm * (1 + editMargin / 100))} Ruby</span>
+                                </div>
+                                <Slider.Track>
+                                  <Slider.Fill />
+                                  <Slider.Thumb />
+                                </Slider.Track>
+                              </Slider>
+                              <div className="flex items-center gap-2">
                                 <Button variant="primary" size="sm" className="flex-1" onPress={() => saveEdit(recipeMenu.id)}>
                                   <Check className="size-4" />
                                   Save Price
@@ -228,10 +232,15 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
                                   <X className="size-4" />
                                   Cancel
                                 </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button variant="secondary" size="sm" className="flex-1" onPress={() => startEdit(recipeMenu.id, recipeSetting.sellPrice)}>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <p className="text-muted text-center">
+                                {((recipeSetting.sellPrice - cogm) / cogm * 100).toFixed(0)}% margin
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <Button variant="secondary" size="sm" className="flex-1" onPress={() => startEdit(recipeMenu.id, recipeSetting.sellPrice, cogm)}>
                                   <Edit2 className="size-4" />
                                   Edit Price
                                 </Button>
@@ -244,9 +253,9 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
                                   {recipeSetting.isActive ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                                   {recipeSetting.isActive ? 'Deactivate' : 'Set Active'}
                                 </Button>
-                              </>
-                            )}
-                          </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </Tabs.Panel>
                     </div>

@@ -1,23 +1,83 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@heroui/react'
-import { BookOpen, BarChart3, PackageSearch, Play, Coffee } from 'lucide-react'
+import { BookOpen, BarChart3, PackageSearch, Play, Coffee, Lightbulb, Sun, Moon, Monitor } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
-import { getState, subscribe } from '../../core/state/gameStore'
+import { getState, setState, subscribe } from '../../core/state/gameStore'
 import { fmt, getExpiringTomorrow } from '../utils'
 import AlmanacDrawer from '../components/AlmanacDrawer'
 import AdvanceModal from '../components/AdvanceModal'
+import HintsDrawer from '../components/HintsDrawer'
+
+type ThemeMode = 'light' | 'dark' | 'adapt'
+const THEME_KEY = 'amatric_theme'
+
+function applyTheme(mode: ThemeMode) {
+  const root = document.documentElement
+  if (mode === 'adapt') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
+  } else {
+    root.setAttribute('data-theme', mode)
+  }
+}
 
 function Layout() {
-  const [state, setState] = useState<GameState>(getState())
-  useEffect(() => subscribe(s => setState({ ...s })), [])
+  const [state, setLocalState] = useState<GameState>(getState())
+  useEffect(() => subscribe(s => setLocalState({ ...s })), [])
 
   const [almanacOpen, setAlmanacOpen] = useState(false)
   const [advanceOpen, setAdvanceOpen] = useState(false)
+  const [hintsOpen, setHintsOpen] = useState(false)
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    return (localStorage.getItem(THEME_KEY) as ThemeMode) || 'adapt'
+  })
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Apply theme on mount and when mode changes
+  useEffect(() => {
+    applyTheme(themeMode)
+    localStorage.setItem(THEME_KEY, themeMode)
+  }, [themeMode])
+
+  // Listen for system preference changes when in adapt mode
+  useEffect(() => {
+    if (themeMode !== 'adapt') return
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = () => applyTheme('adapt')
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [themeMode])
+
+  const cycleTheme = useCallback(() => {
+    setThemeMode(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'adapt' : 'light')
+  }, [])
+
+  const ThemeIcon = themeMode === 'light' ? Sun : themeMode === 'dark' ? Moon : Monitor
+
   const expiring = getExpiringTomorrow(state)
+
+  const toolbarButtons = (
+    <>
+      <Button variant="primary" size="sm" onPress={() => setAlmanacOpen(true)}>
+        <BookOpen className="size-3.5" />
+        <span className="hidden lg:inline">Almanac</span>
+      </Button>
+      <Button
+        size="sm"
+        className="bg-amber-500 hover:bg-amber-600 text-white"
+        onPress={() => setHintsOpen(true)}
+      >
+        <Lightbulb className="size-3.5" />
+        <span className="hidden lg:inline">Tips</span>
+      </Button>
+      <Button variant="secondary" size="sm" onPress={cycleTheme} aria-label={`Theme: ${themeMode}`}>
+        <ThemeIcon className="size-3.5" />
+        <span className="hidden lg:inline capitalize">{themeMode}</span>
+      </Button>
+    </>
+  )
 
   return (
     <>
@@ -27,7 +87,10 @@ function Layout() {
           <div className="flex items-center gap-1.5 justify-between">
             <div className="flex items-center gap-1.5">
               <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold">
-                Day {state.currentDay}
+                Day {state.businessDay}
+                {state.prestigeTier > 0 && (
+                  <span className="ml-1.5 text-amber-500">★ Tier {state.prestigeTier}</span>
+                )}
               </div>
               <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold text-emerald-500">
                 {fmt(state.rubyBalance)} Ruby
@@ -39,9 +102,7 @@ function Layout() {
                   {expiring.length}
                 </div>
               )}
-              <Button variant="primary" size="sm" onPress={() => setAlmanacOpen(true)}>
-                <BookOpen className="size-3.5" />
-              </Button>
+              {toolbarButtons}
             </div>
           </div>
         </header>
@@ -109,6 +170,7 @@ function Layout() {
               {expiring.length} expiring tomorrow
             </div>
           )}
+
           <Button
             variant="primary"
             onPress={() => setAdvanceOpen(true)}
@@ -123,12 +185,12 @@ function Layout() {
         <div className="flex flex-col min-h-screen">
           <header className="sticky top-4 z-50 mx-3">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <Button variant="primary" size="sm" onPress={() => setAlmanacOpen(true)}>
-                  <BookOpen className="size-3.5" />
-                  Almanac
-                </Button>
+                {toolbarButtons}
                 <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold">
-                  Day {state.currentDay}
+                  Day {state.businessDay}
+                  {state.prestigeTier > 0 && (
+                    <span className="ml-1.5 text-amber-500">★ Tier {state.prestigeTier}</span>
+                  )}
                 </div>
                 <div className="rounded-full bg-surface shadow-sm px-3 py-1.5 font-semibold text-emerald-500">
                   {fmt(state.rubyBalance)} Ruby
@@ -154,6 +216,10 @@ function Layout() {
       <AdvanceModal
         isOpen={advanceOpen}
         onClose={() => setAdvanceOpen(false)}
+      />
+      <HintsDrawer
+        isOpen={hintsOpen}
+        onClose={() => setHintsOpen(false)}
       />
     </>
   )

@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react'
 import {
   Card, CardHeader, CardContent, CardFooter,
   Button, TextField, Input, Select, ListBox, toast,
-  Accordion,
+  Accordion, Chip,
+  ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger,
+  ModalHeader, ModalHeading, ModalBody,
 } from '@heroui/react'
 import { ShoppingCart, Plus, Minus, AlertTriangle, Check, ChevronDown } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
 import { getState, setState, subscribe } from '../../core/state/gameStore'
-import { INGREDIENTS } from '../../core/constants/data'
+import { INGREDIENTS, MENU } from '../../core/constants/data'
 import { MENU_BY_ID } from '../../core/constants/lookup'
 import { checkRecipeUnlocks } from '../../core/rules/progression'
 import { calculateCOGM } from '../../core/rules/calculateCogm'
-import { fmt } from '../utils'
+import { fmt, getRecipesUsingIngredient } from '../utils'
+import { getIngredient } from '../utils'
 
 export default function ShopPage() {
   const [state, setLocalState] = useState<GameState>(getState())
@@ -21,6 +24,9 @@ export default function ShopPage() {
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [cartExpanded, setCartExpanded] = useState<Set<string | number>>(new Set())
+  const [ingredientDetailId, setIngredientDetailId] = useState<string | null>(null)
+
+  const RECIPE_COLORS = ['success', 'warning', 'default'] as const
 
   const unlockedIngredientIds = new Set(state.historicalPurchases)
   const activeIngredientIds = new Set(
@@ -65,7 +71,7 @@ export default function ShopPage() {
         id: Math.random().toString(36).substr(2, 9),
         ingredientId: ingr.id,
         qty: ingr.bulkUnit * qty,
-        dayBought: next.currentDay,
+        dayBought: next.businessDay,
       })
       if (!next.historicalPurchases.includes(ingr.id)) {
         next.historicalPurchases.push(ingr.id)
@@ -79,11 +85,11 @@ export default function ShopPage() {
       })
     }
 
-    const unlocks = checkRecipeUnlocks(next.historicalPurchases, next.unlockedMenuIds)
-    for (const id of unlocks) {
+    const { unlockedIds, boostEnds } = checkRecipeUnlocks(next.historicalPurchases, next.unlockedMenuIds, next.businessDay)
+    for (const id of unlockedIds) {
       const menu = MENU_BY_ID.get(id)!
       next.unlockedMenuIds.push(id)
-      next.activeMenus.push({ menuId: id, isActive: true, sellPrice: calculateCOGM(menu) * 2 })
+      next.activeMenus.push({ menuId: id, isActive: true, sellPrice: calculateCOGM(menu) * 2, popularityBoostEnd: boostEnds[id] ?? 0 })
       toast.success(`${menu.name} recipe unlocked`, {
         description: 'Check the Almanac to set your price.',
         indicator: <Check className="size-5 text-emerald-500" />,
@@ -164,6 +170,40 @@ export default function ShopPage() {
                   {fmt(i.bulkCost)} Ruby / {fmt(i.bulkUnit)} {i.unit}
                 </p>
                 <p className="text-muted">{shelfLabel(i.shelfLifeDays)}</p>
+                {(() => {
+                  const usedIn = getRecipesUsingIngredient(i.id)
+                  if (usedIn.length === 0) return null
+                  if (usedIn.length === MENU.length) {
+                    return (
+                      <div className="flex justify-center">
+                        <Chip color="success" variant="soft" size="sm">Essential</Chip>
+                      </div>
+                    )
+                  }
+                  const maxVisible = 3
+                  const visible = usedIn.slice(0, maxVisible)
+                  const overflow = usedIn.length - maxVisible
+                  return (
+                    <div className="flex flex-wrap justify-center gap-1">
+                      {visible.map((m, idx) => (
+                        <Chip key={m.id} color={RECIPE_COLORS[idx % RECIPE_COLORS.length]} variant="soft" size="sm">
+                          {m.name.replace(/^Iced /, '')}
+                        </Chip>
+                      ))}
+                      {overflow > 0 && (
+                        <Chip
+                          color="default"
+                          variant="soft"
+                          size="sm"
+                          className="cursor-pointer"
+                          onClick={() => setIngredientDetailId(i.id)}
+                        >
+                          +{overflow} more
+                        </Chip>
+                      )}
+                    </div>
+                  )
+                })()}
               </CardContent>
               <CardFooter className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2">
@@ -201,6 +241,33 @@ export default function ShopPage() {
           </p>
         )}
       </div>
+
+      {/* Ingredient detail modal */}
+      {ingredientDetailId && (() => {
+        const detailIngredient = getIngredient(ingredientDetailId)
+        const detailRecipes = getRecipesUsingIngredient(ingredientDetailId)
+        return (
+          <ModalBackdrop isOpen onOpenChange={(open) => !open && setIngredientDetailId(null)}>
+            <ModalContainer>
+              <ModalDialog className="max-w-sm">
+                <ModalCloseTrigger />
+                <ModalHeader>
+                  <ModalHeading>{detailIngredient.name}</ModalHeading>
+                </ModalHeader>
+                <ModalBody>
+                  <div className="flex flex-wrap gap-1.5">
+                    {detailRecipes.map((m, idx) => (
+                      <Chip key={m.id} color={RECIPE_COLORS[idx % RECIPE_COLORS.length]} variant="soft" size="sm">
+                        {m.name}
+                      </Chip>
+                    ))}
+                  </div>
+                </ModalBody>
+              </ModalDialog>
+            </ModalContainer>
+          </ModalBackdrop>
+        )
+      })()}
 
       {/* Cart island — pill on both mobile & desktop */}
       {showCart && (

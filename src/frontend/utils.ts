@@ -25,7 +25,7 @@ export const getExpiringTomorrow = (state: GameState): string[] => {
     if (batch.qty <= 0) continue
     const ingredient = INGREDIENT.get(batch.ingredientId)
     if (!ingredient || !isFinite(ingredient.shelfLifeDays)) continue
-    if (state.currentDay + 1 - batch.dayBought >= ingredient.shelfLifeDays) {
+    if (state.businessDay + 1 - batch.dayBought >= ingredient.shelfLifeDays) {
       if (!names.includes(ingredient.name)) names.push(ingredient.name)
     }
   }
@@ -37,3 +37,7 @@ export const totalOnHand = (state: GameState, ingredientId: string): number =>
   state.inventory
     .filter(b => b.ingredientId === ingredientId)
     .reduce((sum, b) => sum + Math.max(0, b.qty), 0)
+
+/** Menu definitions whose recipe uses the given ingredient. */
+export const getRecipesUsingIngredient = (ingredientId: string) =>
+  MENU.filter(menu => menu.recipe.some(r => r.ingredientId === ingredientId))

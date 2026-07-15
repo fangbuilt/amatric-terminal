@@ -1,9 +1,19 @@
 import { createStore } from 'zustand/vanilla'
 import type { GameState } from '../types/gameState'
-import { CONSTANTS } from '../constants/data'
+import { CONSTANTS, DATA_VERSION } from '../constants/data'
 
 const initialState: GameState = {
-  currentDay: 1,
+  businessDay: 1,
+  totalDaysElapsed: 1,
+  dataVersion: DATA_VERSION,
+  prestigeTier: 0,
+  prestigeHistory: [],
+  stats: {
+    highestDailyProfit: 0,
+    highestDailyRevenue: 0,
+    totalCupsSold: 0,
+    fastestBreakEven: null,
+  },
   rubyBalance: CONSTANTS.STARTING_CAPITAL,
   inventory: [],
   historicalPurchases: [],

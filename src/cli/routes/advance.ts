@@ -35,7 +35,7 @@ export async function advanceRoute() {
   setState(newState)
 
   // --- DAILY REPORT ---
-  console.log(chalk.bold.green(`\n========== DAILY REPORT (DAY ${previousState.currentDay}) ==========`))
+  console.log(chalk.bold.green(`\n========== DAILY REPORT (DAY ${previousState.businessDay}) ==========`))
   console.log('')
   console.log(chalk.bold('📈 SALES'))
   console.log(`  Customers served : ${chalk.cyan(report.cupsSold)} / ${CONSTANTS.BASE_DAILY_TRAFFIC}`)
@@ -93,7 +93,7 @@ export async function advanceRoute() {
   }
 
   // Break-even deadline check
-  if (previousState.currentDay >= CONSTANTS.BREAK_EVEN.days && newState.accumulatedNetProfit < CONSTANTS.BREAK_EVEN.target) {
+  if (previousState.businessDay >= CONSTANTS.BREAK_EVEN.days && newState.accumulatedNetProfit < CONSTANTS.BREAK_EVEN.target) {
     console.log(chalk.bgRed.white.bold('\n 🚨 30-DAY DEADLINE FAILED! 🚨 \n'))
     console.log(chalk.red(`Accumulated net profit: ${fmt(newState.accumulatedNetProfit)} Ruby`))
     console.log(chalk.red(`Required: ${fmt(CONSTANTS.BREAK_EVEN.target)} Ruby`))

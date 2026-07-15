@@ -2,19 +2,43 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ToastProvider, Button } from '@heroui/react'
 import type { GameState } from '../core/types/gameState'
-import { getState, subscribe } from '../core/state/gameStore'
+import { getState, setState, subscribe } from '../core/state/gameStore'
 import { CONSTANTS } from '../core/constants/data'
 import Layout from './routes/Layout'
 import MetaPage from './routes/MetaPage'
 import ResourcesPage from './routes/ResourcesPage'
 import IntroOverlay from './components/IntroOverlay'
+import { loadGame, clearSave, autoSave, migrateSave } from './saveManager'
 import { fmt } from './utils'
 
 export default function App() {
-  const [state, setState] = useState<GameState>(getState())
+  const [state, setLocalState] = useState<GameState>(getState())
   const [showIntro, setShowIntro] = useState(() => !localStorage.getItem('amatric_intro_shown'))
+  const [loaded, setLoaded] = useState(false)
 
-  useEffect(() => subscribe(s => setState({ ...s })), [])
+  // Load saved game from IndexedDB on mount
+  useEffect(() => {
+    loadGame().then(saved => {
+      if (saved) {
+        const migrated = migrateSave(saved)
+        setState(migrated)
+        setLocalState({ ...migrated })
+      }
+      setLoaded(true)
+    }).catch(() => setLoaded(true))
+
+    // Register service worker
+    navigator.serviceWorker?.register('/sw.js')
+  }, [])
+
+  // Subscribe to state changes for local rendering + auto-save
+  useEffect(() => {
+    const unsub = subscribe(s => {
+      setLocalState({ ...s })
+      autoSave(s)
+    })
+    return unsub
+  }, [])
 
   // Game-over: bankruptcy
   if (state.isBankrupt) {
@@ -27,7 +51,7 @@ export default function App() {
           </p>
           <Button
             variant="primary"
-            onPress={() => { localStorage.clear(); window.location.reload() }}
+            onPress={() => { clearSave().then(() => window.location.reload()) }}
           >
             Restart Game
           </Button>
@@ -38,7 +62,7 @@ export default function App() {
 
   // Game-over: break-even deadline failed
   const breakEvenFailed =
-    state.currentDay > CONSTANTS.BREAK_EVEN.days &&
+    state.businessDay > CONSTANTS.BREAK_EVEN.days &&
     state.accumulatedNetProfit < CONSTANTS.BREAK_EVEN.target
 
   return (
@@ -63,7 +87,7 @@ export default function App() {
                 </p>
                 <Button
                   variant="primary"
-                  onPress={() => { localStorage.clear(); window.location.reload() }}
+                  onPress={() => { clearSave().then(() => window.location.reload()) }}
                 >
                   Try Again
                 </Button>

@@ -19,4 +19,5 @@ export interface DrinkMenu {
   name: string
   recipe: RecipeLine[]
   basePopularity: number
+  unlockOrder: number
 }

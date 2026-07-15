@@ -41,7 +41,7 @@ const serveCustomer = (
   activeMenus: typeof MENU,
   outOfStock: Set<string>,
 ): boolean => {
-  const menu = pickMenu(activeMenus)
+  const menu = pickMenu(activeMenus, state.activeMenus, state.businessDay)
   const setting = state.activeMenus.find(s => s.menuId === menu.id)!
   const cogm = calculateCOGM(menu)
 
@@ -69,7 +69,8 @@ const closeDayFinances = (state: GameState, report: DailyReport): void => {
   state.accumulatedGrossRevenue += report.grossRevenue
   state.accumulatedNetProfit += report.netProfit
   state.dailyHistory.push(report)
-  state.currentDay++
+  state.businessDay++
+  state.totalDaysElapsed += 1.4 // 7/5 business→calendar ratio
   if (state.rubyBalance < 0) state.isBankrupt = true
 }
 
@@ -89,6 +90,8 @@ export const simulateDay = (
     spoilageLoss: 0,
     netProfit: 0,
     cupsSold: 0,
+    dailyTraffic: 0,
+    isBusyDay: false,
     walkouts: { tooExpensive: 0, outOfStock: 0, queueTooLong: 0 },
     expiredIngredients: [],
     outOfStockItems: [],
@@ -99,9 +102,19 @@ export const simulateDay = (
   const capacity = calculateCapacity(cloned)
   const active = getActiveMenus(cloned)
 
-  // 2. Customer service loop
+  // 2. Customer traffic with fluctuation and busy-day mechanic
+  const prestigeMultiplier = 1 + cloned.prestigeTier * CONSTANTS.PRESTIGE_TRAFFIC_BONUS
+  const variance = 1 + (Math.random() * 2 - 1) * CONSTANTS.TRAFFIC_VARIANCE
+  const isBusyDay = Math.random() < CONSTANTS.BUSY_DAY_CHANCE
+  const busyBonus = isBusyDay ? CONSTANTS.BUSY_DAY_BONUS : 0
+  const dailyTraffic = Math.round(
+    CONSTANTS.BASE_DAILY_TRAFFIC * prestigeMultiplier * (variance + busyBonus),
+  )
+  report.dailyTraffic = dailyTraffic
+  report.isBusyDay = isBusyDay
+
   const outOfStock = new Set<string>()
-  for (let i = 0; i < CONSTANTS.BASE_DAILY_TRAFFIC; i++) {
+  for (let i = 0; i < dailyTraffic; i++) {
     if (active.length === 0) break
     if (report.cupsSold >= capacity) {
       report.walkouts.queueTooLong++
@@ -112,7 +125,7 @@ export const simulateDay = (
   report.outOfStockItems = [...outOfStock]
 
   // 3. Handle expiration
-  const expired = checkExpiry(cloned.inventory, cloned.currentDay)
+  const expired = checkExpiry(cloned.inventory, cloned.businessDay)
   report.spoilageLoss = expired.spoilageLoss
   report.expiredIngredients = expired.expiredIngredients
 
@@ -121,6 +134,23 @@ export const simulateDay = (
 
   // 5. Close finances
   closeDayFinances(cloned, report)
+
+  // 6. Stats tracking
+  cloned.stats.highestDailyProfit = Math.max(
+    cloned.stats.highestDailyProfit,
+    report.netProfit,
+  )
+  cloned.stats.highestDailyRevenue = Math.max(
+    cloned.stats.highestDailyRevenue,
+    report.grossRevenue,
+  )
+  cloned.stats.totalCupsSold += report.cupsSold
+  if (
+    cloned.stats.fastestBreakEven === null &&
+    cloned.accumulatedNetProfit >= CONSTANTS.BREAK_EVEN.target
+  ) {
+    cloned.stats.fastestBreakEven = cloned.businessDay
+  }
 
   return { newState: cloned, report }
 }

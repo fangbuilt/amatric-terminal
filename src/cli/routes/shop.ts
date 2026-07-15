@@ -52,7 +52,7 @@ export async function shopRoute() {
     id: Math.random().toString(36).substr(2, 9),
     ingredientId: ingredient.id,
     qty: ingredient.bulkUnit * qty,
-    dayBought: next.currentDay,
+    dayBought: next.businessDay,
   })
 
   if (!next.historicalPurchases.includes(ingredient.id)) {
@@ -61,12 +61,12 @@ export async function shopRoute() {
 
   console.log(chalk.green(`\n✅ Bought ${qty}x ${ingredient.name} for ${fmt(totalCost)} Ruby!`))
 
-  const unlocks = checkRecipeUnlocks(next.historicalPurchases, next.unlockedMenuIds)
-  for (const id of unlocks) {
+  const { unlockedIds, boostEnds } = checkRecipeUnlocks(next.historicalPurchases, next.unlockedMenuIds, next.businessDay)
+  for (const id of unlockedIds) {
     const menu = MENU_BY_ID.get(id)!
     console.log(chalk.bgGreen.black.bold(` 🎉 NEW MENU UNLOCKED: ${menu.name}! 🎉 `))
     next.unlockedMenuIds.push(id)
-    next.activeMenus.push({ menuId: id, isActive: true, sellPrice: calculateCOGM(menu) * 2 })
+    next.activeMenus.push({ menuId: id, isActive: true, sellPrice: calculateCOGM(menu) * 2, popularityBoostEnd: boostEnds[id] ?? 0 })
   }
 
   setState(next)

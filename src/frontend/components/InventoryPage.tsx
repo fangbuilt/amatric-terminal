@@ -80,6 +80,13 @@ export default function InventoryPage() {
         </Surface>
       )}
 
+      {/* All in stock message */}
+      {state.inventory.length > 0 && outOfStock.length === 0 && expiringTomorrow.length === 0 && (
+        <p className="text-center text-emerald-500">
+          All active menu items are in stock.
+        </p>
+      )}
+
       {/* FIFO Warehouse */}
       {state.inventory.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-12 text-muted">
@@ -92,7 +99,7 @@ export default function InventoryPage() {
             const ingredient = getIngredient(id)
             const total = totalOnHand(state, id)
             const expiringCount = batches.filter(b => {
-              const age = state.currentDay - b.dayBought
+              const age = state.businessDay - b.dayBought
               const daysLeft = ingredient.shelfLifeDays - age
               return isFinite(ingredient.shelfLifeDays) && daysLeft <= 1
             }).length
@@ -132,12 +139,6 @@ export default function InventoryPage() {
         </div>
       )}
 
-      {state.inventory.length > 0 && outOfStock.length === 0 && expiringTomorrow.length === 0 && (
-        <p className="text-center text-emerald-500">
-          All active menu items are in stock.
-        </p>
-      )}
-
       {/* Batch details modal */}
       <ModalBackdrop isOpen={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
         <ModalContainer>
@@ -158,7 +159,7 @@ export default function InventoryPage() {
 
                   <div className="space-y-3">
                     {selectedBatches.map((batch, i) => {
-                      const age = state.currentDay - batch.dayBought
+                      const age = state.businessDay - batch.dayBought
                       const daysLeft = selectedIngredient.shelfLifeDays - age
                       const isExpired = !isFinite(selectedIngredient.shelfLifeDays) ? false : daysLeft <= 0
                       const pct = isFinite(selectedIngredient.shelfLifeDays)
