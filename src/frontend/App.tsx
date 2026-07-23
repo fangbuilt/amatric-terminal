@@ -69,7 +69,13 @@ export default function App() {
     <>
       <ToastProvider placement="top end" className="toast-container z-[9999]" />
 
-      {showIntro && <IntroOverlay onFinish={() => setShowIntro(false)} />}
+      {showIntro && <IntroOverlay onFinish={(name) => {
+        const next = JSON.parse(JSON.stringify(getState())) as GameState
+        next.cafeName = name
+        setState(next)
+        setLocalState({ ...next })
+        setShowIntro(false)
+      }} />}
 
       {!showIntro && (
         <div className="flex min-h-screen flex-col">

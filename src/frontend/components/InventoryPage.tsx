@@ -82,9 +82,12 @@ export default function InventoryPage() {
 
       {/* All in stock message */}
       {state.inventory.length > 0 && outOfStock.length === 0 && expiringTomorrow.length === 0 && (
-        <p className="text-center text-emerald-500">
-          All active menu items are in stock.
-        </p>
+        <div className="flex justify-center">
+          <Chip color="success" variant="soft" className="gap-1">
+            <Check className="size-3.5" />
+            All active menu items are in stock.
+          </Chip>
+        </div>
       )}
 
       {/* FIFO Warehouse */}
@@ -186,6 +189,7 @@ export default function InventoryPage() {
                             color={isExpired ? 'danger' : daysLeft <= 1 ? 'warning' : 'success'}
                             size="sm"
                             className="w-full"
+                            aria-label="Shelf life"
                           >
                             <ProgressBar.Track>
                               <ProgressBar.Fill />

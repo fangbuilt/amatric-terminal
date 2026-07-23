@@ -136,10 +136,10 @@ export default function HistoryPage() {
 
           {/* Walkouts */}
           {(day.walkouts.tooExpensive > 0 || day.walkouts.outOfStock > 0 || day.walkouts.queueTooLong > 0) && (
-            <div className="pt-2 border-t border-stone-700/50 text-muted">
+            <div className="pt-4 border-t border-stone-700/50 text-muted">
               <p>
-                Walkouts: {day.walkouts.tooExpensive} expensive,
-                {day.walkouts.outOfStock} OOS,
+                Walkouts: {day.walkouts.tooExpensive} expensive,{` `}
+                {day.walkouts.outOfStock} OOS,{` `}
                 {day.walkouts.queueTooLong} queue
               </p>
             </div>

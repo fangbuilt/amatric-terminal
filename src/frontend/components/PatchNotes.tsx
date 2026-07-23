@@ -18,7 +18,7 @@ export default function PatchNotes({ isOpen, onClose, notes, version }: Props) {
         <ModalDialog>
           <ModalCloseTrigger />
           <ModalHeader>
-            <ModalHeading>Patch Notes — v{version}</ModalHeading>
+            <ModalHeading>Patch Notes | v{version}</ModalHeading>
           </ModalHeader>
           <ModalBody>
             <p className="whitespace-pre-wrap text-muted">{notes}</p>

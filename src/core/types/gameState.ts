@@ -31,6 +31,7 @@ export interface GameState {
   businessDay: number
   totalDaysElapsed: number
   dataVersion: number
+  cafeName: string
   prestigeTier: number
   prestigeHistory: PrestigeRecord[]
   stats: GameStats

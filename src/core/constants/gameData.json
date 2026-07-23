@@ -54,7 +54,7 @@
   ],
   "constants": {
     "STARTING_CAPITAL": 5000,
-    "BASE_DAILY_TRAFFIC": 100,
+    "BASE_DAILY_TRAFFIC": 200,
     "TRAFFIC_VARIANCE": 0.2,
     "BUSY_DAY_CHANCE": 0.2,
     "BUSY_DAY_BONUS": 0.5,
@@ -62,9 +62,10 @@
     "PRESTIGE_CAPITAL_BONUS": 2000,
     "BREAK_EVEN": { "target": 5000, "days": 30 },
     "STAFF": {
-      "BARISTA": { "dailyWage": 100, "capacityBonus": 100 },
-      "CASHIER": { "dailyWage": 70, "capacityBonus": 60 }
-    },
+          "BARISTA": { "dailyWage": 100, "capacityBonus": 150 },
+          "CASHIER": { "dailyWage": 70, "capacityBonus": 100 }
+        },
+        "BASE_CAPACITY": 50,
     "SEVERANCE_MULTIPLIER": 3
   }
 }

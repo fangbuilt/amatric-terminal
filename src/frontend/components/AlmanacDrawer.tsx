@@ -216,7 +216,7 @@ export default function AlmanacDrawer({ isOpen, onClose }: Props) {
                               >
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="text-muted">Margin</span>
-                                  <span className="font-semibold">{editMargin}% — Sell: {fmt(cogm * (1 + editMargin / 100))} Ruby</span>
+                                  <span className="font-semibold">{editMargin}% | Sell: {fmt(cogm * (1 + editMargin / 100))} Ruby</span>
                                 </div>
                                 <Slider.Track>
                                   <Slider.Fill />

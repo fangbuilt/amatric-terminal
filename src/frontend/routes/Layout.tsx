@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@heroui/react'
-import { BookOpen, BarChart3, PackageSearch, Play, Coffee, Lightbulb, Sun, Moon, Monitor } from 'lucide-react'
+import { BookOpen, BarChart3, PackageSearch, Play, Coffee, Lightbulb, Sun, Moon, Monitor, NotebookPen } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
 import { getState, setState, subscribe } from '../../core/state/gameStore'
 import { fmt, getExpiringTomorrow } from '../utils'
 import AlmanacDrawer from '../components/AlmanacDrawer'
 import AdvanceModal from '../components/AdvanceModal'
 import HintsDrawer from '../components/HintsDrawer'
+import NotesDrawer from '../components/NotesDrawer'
 
 type ThemeMode = 'light' | 'dark' | 'adapt'
 const THEME_KEY = 'amatric_theme'
@@ -29,6 +30,7 @@ function Layout() {
   const [almanacOpen, setAlmanacOpen] = useState(false)
   const [advanceOpen, setAdvanceOpen] = useState(false)
   const [hintsOpen, setHintsOpen] = useState(false)
+  const [notesOpen, setNotesOpen] = useState(false)
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     return (localStorage.getItem(THEME_KEY) as ThemeMode) || 'adapt'
   })
@@ -71,6 +73,10 @@ function Layout() {
       >
         <Lightbulb className="size-3.5" />
         <span className="hidden lg:inline">Tips</span>
+      </Button>
+      <Button variant="secondary" size="sm" onPress={() => setNotesOpen(true)}>
+        <NotebookPen className="size-3.5" />
+        <span className="hidden lg:inline">Notes</span>
       </Button>
       <Button variant="secondary" size="sm" onPress={cycleTheme} aria-label={`Theme: ${themeMode}`}>
         <ThemeIcon className="size-3.5" />
@@ -146,7 +152,7 @@ function Layout() {
         <nav className="fixed left-3 top-3 bottom-3 z-40 w-56 flex flex-col bg-surface p-3 gap-1.5 rounded-xl shadow-sm">
           <div className="flex items-center gap-2 px-3 py-3 mb-1">
             <Coffee className="size-5 text-amber-500" />
-            <span className="font-bold">Amatric</span>
+            <span className="font-bold">{state.cafeName || 'Amatric'}</span>
           </div>
           <Button
             variant="ghost"
@@ -220,6 +226,10 @@ function Layout() {
       <HintsDrawer
         isOpen={hintsOpen}
         onClose={() => setHintsOpen(false)}
+      />
+      <NotesDrawer
+        isOpen={notesOpen}
+        onClose={() => setNotesOpen(false)}
       />
     </>
   )

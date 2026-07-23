@@ -1,12 +1,26 @@
 import { useState } from 'react'
-import { Button } from '@heroui/react'
-import { Coffee, AlertTriangle, MapPin } from 'lucide-react'
+import { Button, TextField, Input, Card, CardContent, Label } from '@heroui/react'
+import { Coffee, AlertTriangle, MapPin, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 
 interface Props {
-  onFinish: () => void
+  onFinish: (cafeName: string) => void
 }
 
-const pages = [
+interface IntroLine {
+  text: string
+  bold?: boolean
+  dim?: boolean
+  highlight?: boolean
+  warning?: boolean
+}
+
+interface IntroPage {
+  icon: typeof Coffee
+  lines: IntroLine[]
+  isNamePage?: boolean
+}
+
+const pages: IntroPage[] = [
   {
     icon: MapPin,
     lines: [
@@ -36,11 +50,8 @@ const pages = [
     lines: [
       { text: 'THE ECONOMY', bold: true },
       { text: '' },
-      { text: 'Currency: Ruby -- redenominated rupiah (1 Ruby = 1,000 IDR).' },
-      { text: 'Named after the author\'s beloved.', dim: true },
-      { text: '' },
-      { text: 'Starting capital: 5,000 Ruby', highlight: true },
-      { text: 'Daily traffic: 100 customers' },
+      { text: 'Starting capital: 5,000 Ruby (1 Ruby = 1,000 IDR).', highlight: true },
+      { text: 'Daily traffic: 200 customers' },
       { text: '' },
       { text: 'Ingredients expire. Milk goes bad in 4 days.', warning: true },
       { text: 'Overspend unwisely and it is game over.', warning: true },
@@ -65,6 +76,16 @@ const pages = [
     ],
   },
   {
+    icon: Coffee,
+    isNamePage: true,
+    lines: [
+      { text: 'NAME YOUR CAFE', bold: true },
+      { text: '' },
+      { text: "What will Bayu call his stall?" },
+      { text: 'Choose wisely. This name will appear throughout your journey.', dim: true },
+    ],
+  },
+  {
     icon: AlertTriangle,
     lines: [
       { text: 'DISCLAIMER', bold: true },
@@ -73,7 +94,7 @@ const pages = [
       { text: '' },
       { text: 'There is no hand-holding. Figure out which ingredients to buy.', dim: true },
       { text: 'Unlock the Brown Sugar Latte first, or go straight for Matcha.', dim: true },
-      { text: 'Every player\'s journey is unique.', dim: true },
+      { text: "Every player's journey is unique.", dim: true },
       { text: '' },
       { text: 'Help Bayu pass his final grade.', bold: true },
       { text: 'The campus is watching.', bold: true },
@@ -83,56 +104,157 @@ const pages = [
 
 export default function IntroOverlay({ onFinish }: Props) {
   const [page, setPage] = useState(0)
+  const [cafeName, setCafeName] = useState('')
 
+  const isFirst = page === 0
   const isLast = page >= pages.length - 1
+  const isNamePage = pages[page].isNamePage
 
-  const advance = () => {
+  const goNext = () => {
     if (isLast) {
       localStorage.setItem('amatric_intro_shown', 'true')
-      onFinish()
+      onFinish(cafeName.trim() || "Bayu's Stall")
     } else {
       setPage(p => p + 1)
     }
   }
 
+  const goPrev = () => {
+    if (!isFirst) setPage(p => p - 1)
+  }
+
   const p = pages[page]
   const Icon = p.icon
 
+  const indicator = (
+    <p className="text-muted">
+      {page + 1} / {pages.length}
+    </p>
+  )
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg max-h-full overflow-y-auto">
-        <div className="space-y-1 sm:text-center">
-          {p.lines.map((line, i) => {
-            if (!line.text) return <br key={i} />
-            return (
-              <p
-                key={i}
-                className={
-                  line.bold ? 'font-bold' :
-                  line.highlight ? 'text-amber-500 font-semibold' :
-                  line.warning ? 'text-danger font-medium' :
-                  line.dim ? 'text-muted sm:' :
-                  ''
-                }
-              >
-                {line.text}
-              </p>
-            )
-          })}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'var(--background)' }}>
+      {/* Desktop layout: prev/next buttons beside card, indicator below */}
+      <div className="hidden lg:flex items-center gap-4">
+        <Button
+          variant="secondary"
+          size="lg"
+          isIconOnly
+          isDisabled={isFirst}
+          onPress={goPrev}
+        >
+          <ChevronLeft className="size-5" />
+        </Button>
+
+        <div className="flex flex-col items-center gap-3">
+          <Card className="w-96">
+            <CardContent className="p-6 space-y-1">
+              {p.lines.map((line, i) => {
+                if (!line.text) return <br key={i} />
+                return (
+                  <p
+                    key={i}
+                    className={
+                      line.bold ? 'font-bold' :
+                      line.highlight ? 'text-amber-500 font-semibold' :
+                      line.warning ? 'text-danger font-medium' :
+                      line.dim ? 'text-muted' :
+                      ''
+                    }
+                  >
+                    {line.text}
+                  </p>
+                )
+              })}
+              {isNamePage && (
+                <div className="pt-4">
+                  <div className="rounded-xl bg-surface-secondary p-4">
+                    <TextField value={cafeName} onChange={setCafeName}>
+                      <Label>Cafe name</Label>
+                      <Input
+                        placeholder="Bayu's Stall"
+                        maxLength={30}
+                      />
+                    </TextField>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          {indicator}
         </div>
 
         <Button
-          variant="primary"
+          variant={isLast ? 'primary' : 'secondary'}
           size="lg"
-          className="mx-auto mt-8 block"
-          onPress={advance}
+          isIconOnly
+          onPress={goNext}
         >
-          {isLast ? 'Begin Game' : 'Continue'}
+          {isLast ? <Check className="size-5" /> : <ChevronRight className="size-5" />}
         </Button>
+      </div>
 
-        <p className="mt-3 text-center text-muted">
-          {page + 1} / {pages.length}
-        </p>
+      {/* Mobile layout: card on top, buttons + indicator at bottom */}
+      <div className="flex flex-col lg:hidden w-full max-w-lg h-full max-h-full">
+        <div className="flex-1 flex items-center justify-center overflow-y-auto py-4">
+          <Card className="w-full">
+            <CardContent className="p-5 space-y-1">
+              {p.lines.map((line, i) => {
+                if (!line.text) return <br key={i} />
+                return (
+                  <p
+                    key={i}
+                    className={
+                      line.bold ? 'font-bold' :
+                      line.highlight ? 'text-amber-500 font-semibold' :
+                      line.warning ? 'text-danger font-medium' :
+                      line.dim ? 'text-muted' :
+                      ''
+                    }
+                  >
+                    {line.text}
+                  </p>
+                )
+              })}
+              {isNamePage && (
+                <div className="pt-4">
+                  <div className="rounded-xl bg-surface-secondary p-4">
+                    <TextField value={cafeName} onChange={setCafeName}>
+                      <Label>Cafe name</Label>
+                      <Input
+                        placeholder="Bayu's Stall"
+                        maxLength={30}
+                      />
+                    </TextField>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="shrink-0 flex items-center justify-between pt-4 pb-2">
+          <Button
+            variant="secondary"
+            size="lg"
+            isIconOnly
+            isDisabled={isFirst}
+            onPress={goPrev}
+          >
+            <ChevronLeft className="size-5" />
+          </Button>
+
+          {indicator}
+
+          <Button
+            variant={isLast ? 'primary' : 'secondary'}
+            size="lg"
+            isIconOnly
+            onPress={goNext}
+          >
+            {isLast ? <Check className="size-5" /> : <ChevronRight className="size-5" />}
+          </Button>
+        </div>
       </div>
     </div>
   )

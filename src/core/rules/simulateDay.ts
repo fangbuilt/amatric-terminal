@@ -22,7 +22,7 @@ const calculateOpex = (state: GameState): number => {
 
 /** Calculate max cups the cafe can produce in a day. */
 const calculateCapacity = (state: GameState): number => {
-  let cap = 0
+  let cap = CONSTANTS.BASE_CAPACITY
   if (state.hasBarista) cap += CONSTANTS.STAFF.BARISTA.capacityBonus
   if (state.hasCashier) cap += CONSTANTS.STAFF.CASHIER.capacityBonus
   return cap

@@ -16,6 +16,7 @@ export default function StaffPage() {
   const [severanceModalOpen, setSeveranceModalOpen] = useState(false)
 
   const capacity =
+    CONSTANTS.BASE_CAPACITY +
     (state.hasBarista ? CONSTANTS.STAFF.BARISTA.capacityBonus : 0) +
     (state.hasCashier ? CONSTANTS.STAFF.CASHIER.capacityBonus : 0)
 
@@ -97,8 +98,27 @@ export default function StaffPage() {
 
           <Separator />
 
-          <div className="text-center text-muted">
-            Total capacity: {capacity} cups/day
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted">Bayu (base)</span>
+              <span className="font-semibold">{CONSTANTS.BASE_CAPACITY} cups/day</span>
+            </div>
+            {state.hasBarista && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted">+ Barista</span>
+                <span className="font-semibold">+{CONSTANTS.STAFF.BARISTA.capacityBonus} cups/day</span>
+              </div>
+            )}
+            {state.hasCashier && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted">+ Cashier</span>
+                <span className="font-semibold">+{CONSTANTS.STAFF.CASHIER.capacityBonus} cups/day</span>
+              </div>
+            )}
+            <Separator />
+            <div className="text-center font-bold mt-4">
+              Total capacity: {capacity} cups/day
+            </div>
           </div>
         </CardContent>
       </Card>

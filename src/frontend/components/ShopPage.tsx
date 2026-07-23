@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   Card, CardHeader, CardContent, CardFooter,
-  Button, TextField, Input, Select, ListBox, toast,
+  Button, Label, TextField, Input, Select, ListBox, toast,
   Accordion, Chip,
   ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger,
   ModalHeader, ModalHeading, ModalBody,
@@ -123,6 +123,7 @@ export default function ShopPage() {
           className="flex-1"
           value={search}
           onChange={setSearch}
+          aria-label="Search ingredients"
         >
           <Input placeholder="Search ingredients..." aria-label="Search ingredients" />
         </TextField>
@@ -131,6 +132,7 @@ export default function ShopPage() {
           placeholder="Filter"
           selectedKey={filter}
           onSelectionChange={(k) => setFilter(k as string)}
+          aria-label="Filter ingredients"
         >
           <Select.Trigger>
             <Select.Value />
@@ -269,7 +271,7 @@ export default function ShopPage() {
         )
       })()}
 
-      {/* Cart island — pill on both mobile & desktop */}
+      {/* Cart island, pill on both mobile & desktop */}
       {showCart && (
         <>
           {/* Mobile */}

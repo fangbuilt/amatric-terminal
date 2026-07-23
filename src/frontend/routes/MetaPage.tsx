@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Card, CardHeader, CardContent, CardFooter,
-  Button, ProgressBar, Surface, Chip, Separator,
+  Button, ProgressBar, Label, Surface, Chip, Separator,
 } from '@heroui/react'
 import { RotateCcw, Heart, Megaphone, Target, CircleDollarSign, TrendingUp, ArrowUpFromLine, ArrowDownToLine } from 'lucide-react'
 import type { GameState } from '../../core/types/gameState'
@@ -62,6 +62,9 @@ export default function MetaPage() {
               <TrendingUp className="size-4 text-amber-500" />
               <span className="font-bold">Business Overview</span>
             </div>
+            {state.cafeName && (
+              <p className="text-amber-500 font-semibold mt-1">{state.cafeName}</p>
+            )}
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Break-even progress */}
@@ -72,7 +75,8 @@ export default function MetaPage() {
                   {fmt(state.accumulatedNetProfit)} / {fmt(CONSTANTS.BREAK_EVEN.target)} Ruby
                 </span>
               </div>
-              <ProgressBar value={beProgress} color={beMet ? 'success' : 'warning'} size="md">
+              <ProgressBar value={beProgress} color={beMet ? 'success' : 'warning'} size="md" aria-label="Break-even progress">
+                <Label>Break-even progress</Label>
                 <ProgressBar.Track>
                   <ProgressBar.Fill />
                 </ProgressBar.Track>
@@ -140,7 +144,7 @@ export default function MetaPage() {
               </Surface>
               <Surface variant="secondary" className="rounded-xl px-3 py-2.5 text-center">
                 <p className="text-muted uppercase tracking-wider">Fastest Break-Even</p>
-                <p className="font-bold">{state.stats.fastestBreakEven != null ? `Day ${state.stats.fastestBreakEven}` : '—'}</p>
+                <p className="font-bold">{state.stats.fastestBreakEven != null ? `Day ${state.stats.fastestBreakEven}` : '-'}</p>
               </Surface>
             </div>
           </CardContent>
@@ -166,7 +170,7 @@ export default function MetaPage() {
               <ArrowDownToLine className="size-3.5 shrink-0" />
               Import Save
             </Button>
-            <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+            <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} aria-label="Import save file" />
           </CardContent>
         </Card>
 
@@ -252,7 +256,7 @@ export default function MetaPage() {
               <div className="space-y-1.5">
                 {state.prestigeHistory.map((rec, i) => (
                   <div key={i} className="flex items-center justify-between text-muted">
-                    <span>Tier {rec.tier} — Day {rec.businessDay}</span>
+                    <span>Tier {rec.tier} | Day {rec.businessDay}</span>
                     <span>{fmt(rec.accumulatedNetProfit)} Ruby</span>
                   </div>
                 ))}

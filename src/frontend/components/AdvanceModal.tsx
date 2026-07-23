@@ -90,6 +90,7 @@ export default function AdvanceModal({ isOpen, onClose }: Props) {
   }
 
   const capacity =
+    CONSTANTS.BASE_CAPACITY +
     (state.hasBarista ? CONSTANTS.STAFF.BARISTA.capacityBonus : 0) +
     (state.hasCashier ? CONSTANTS.STAFF.CASHIER.capacityBonus : 0)
   const activeCount = state.activeMenus.filter(m => m.isActive).length

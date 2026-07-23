@@ -29,5 +29,6 @@ export const CONSTANTS = {
   PRESTIGE_CAPITAL_BONUS: rawData.constants.PRESTIGE_CAPITAL_BONUS,
   BREAK_EVEN: rawData.constants.BREAK_EVEN,
   STAFF: rawData.constants.STAFF,
+  BASE_CAPACITY: rawData.constants.BASE_CAPACITY,
   SEVERANCE_MULTIPLIER: rawData.constants.SEVERANCE_MULTIPLIER,
 }

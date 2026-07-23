@@ -6,6 +6,7 @@ const initialState: GameState = {
   businessDay: 1,
   totalDaysElapsed: 1,
   dataVersion: DATA_VERSION,
+  cafeName: '',
   prestigeTier: 0,
   prestigeHistory: [],
   stats: {
