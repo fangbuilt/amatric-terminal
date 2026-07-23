@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
 body {
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;

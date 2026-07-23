@@ -319,7 +319,7 @@ export default function ShopPage() {
           </div>
 
           {/* Desktop */}
-          <div className="hidden lg:flex fixed bottom-4 left-[15.5rem] right-3 z-30 rounded-xl bg-surface shadow-sm px-4 py-2 flex-col gap-1">
+          <div className="hidden lg:flex fixed bottom-4 left-62 right-3 z-30 rounded-xl bg-surface shadow-sm px-4 py-2 flex-col gap-1">
             <div className="flex items-center justify-between gap-2">
               <div className="shrink-0">
                 <span className="text-muted">{cartItemCount} item{cartItemCount !== 1 ? 's' : ''}</span>

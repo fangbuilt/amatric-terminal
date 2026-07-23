@@ -67,7 +67,7 @@ export default function App() {
 
   return (
     <>
-      <ToastProvider placement="top end" className="toast-container z-[9999]" />
+      <ToastProvider placement="top end" className="toast-container z-9999" />
 
       {showIntro && <IntroOverlay onFinish={(name) => {
         const next = JSON.parse(JSON.stringify(getState())) as GameState

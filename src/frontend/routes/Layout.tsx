@@ -147,7 +147,7 @@ function Layout() {
       </div>
 
       {/* ---- Desktop / tablet-landscape layout ---- */}
-      <div className="hidden lg:block min-h-screen pl-[15.5rem]">
+      <div className="hidden lg:block min-h-screen pl-62">
         {/* Sidebar */}
         <nav className="fixed left-3 top-3 bottom-3 z-40 w-56 flex flex-col bg-surface p-3 gap-1.5 rounded-xl shadow-sm">
           <div className="flex items-center gap-2 px-3 py-3 mb-1">

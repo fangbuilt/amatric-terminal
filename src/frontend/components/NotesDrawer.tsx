@@ -42,7 +42,7 @@ export default function NotesDrawer({ isOpen, onClose }: Props) {
               value={notes}
               onChange={handleChange}
               placeholder="..."
-              className="min-h-[200px] w-full"
+              className="min-h-50 w-full"
               aria-label="Player notes"
             />
           </DrawerBody>
